@@ -8,11 +8,26 @@ screen study_room_hover():
         xalign 0.5
         ground "location_selection.png"
         hover "location_selection_hover.png"
-        hotspot (50, 160, 650, 450) action Jump("desk_top")
-        hotspot (50, 620, 550, 400) action Jump("floor_stain")
-        hotspot (600, 620, 650, 400) action Jump("chair_backpack")
+        hotspot (50, 160, 650, 450) action Jump("desk_top_label")
+        hotspot (50, 620, 550, 400) action Jump("floor_stain_label")
+        hotspot (600, 620, 650, 400) action Jump("backpack_label")
+
+
+label prompt_place_scale:
+    "Please take your fingerprints and set up your tape measure before taking a photo."
+    $ renpy.pause(1.0)
+    jump note_fingerprint_label
 
 screen camera_preview_ui():
+
+    if current_location == "note_fingerprint" and not scalebar_state:
+        # 等待 0 秒，立刻运行 Jump
+        timer 0.1 repeat False action [
+            Hide("camera_preview_ui"),
+            Show("study_room3_inventory"),
+            Function(safe_camera_data, theme_x, theme_y, theme_zoom, aperture, iso_index, focal_len),
+            Call("prompt_place_scale")
+        ]
 
     # 全屏黑背景
     frame:
@@ -72,7 +87,9 @@ screen camera_preview_ui():
         hotspot (850, 780, 250, 250) action [
             Hide("camera_preview_ui"),
             Show("study_room3_inventory"),
-            Function(renpy.jump, "{}_label".format(current_location)),
+            Function(safe_camera_data, theme_x, theme_y, theme_zoom, aperture, iso_index, focal_len),
+            SetVariable("show_animation_camera", True),
+            Function(renpy.jump, "{}_label".format(current_location))
         ]
 
         # iso button +
@@ -94,6 +111,8 @@ screen camera_preview_ui():
             SetVariable("theme_zoom", clamp(theme_zoom, 3.0, 4.0)) 
         ]
 
+        text "Current Focal Length: \n        [focal_len]" xpos 0.125 ypos 0.6 anchor (0.5, 0.5) size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
+
         text "50mm" xpos 0.15 ypos 0.74 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
 
         text "105mm" xpos 0.15 ypos 0.897 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
@@ -106,8 +125,208 @@ screen camera_preview_ui():
         #     ysize 150
 
 init python:
+    from math import ceil
+
     def clamp(value, min_value, max_value):
         return max(min_value, min(value, max_value))
+    def safe_camera_data(theme_x, theme_y, theme_zoom, aperture, iso_index, focal_len):
+        print("Saving camera data...")
+        global photo_data
+        photo_data.append({
+            "location": current_location,
+            "iso_index": iso_index,
+            "aperture_index": aperture,
+            "zoom_level": theme_zoom,
+            "lens": focal_len,
+            "theme_x": theme_x,
+            "theme_y": theme_y
+        })
+
+screen photo_flying():
+    default aperture_index_local = photo_data[-1]["aperture_index"]
+    default aperture_number_local = aperture_group[aperture_index_local].replace("F", "")
+    add "camera/[current_location]-[aperture_number_local].png" xpos theme_x ypos theme_y anchor (0.5, 0.5) alpha iso_to_alpha.get(iso_group[photo_data[-1]["iso_index"]], 1.0) at photo_slide_out
+    timer 1.1 action [
+        Hide("photo_flying"),
+        SetVariable("show_animation_camera", False),
+    ]
+
+transform photo_slide_out:
+    xpos 0.5 ypos 1.0 zoom 0.5
+    linear 1.0 xpos 0 ypos -0.15 zoom 0.2
+    
+screen photo_album():
+
+    add Solid("#000")
+
+    default photo_index = 0
+    default current_page = ceil(photo_index / 6.0)
+    default total_photos = len(photo_data) if photo_data else 0
+    default total_pages = ceil(len(photo_data) / 6.0) if photo_data else 0
+    default current_location_local = "{}_label".format(current_location)
+
+    default photo_location_list =[(440, 350), (950, 350), (1480, 350), (440, 780), (950, 780), (1480, 780)]
+    
+    for i in range(6):
+        if photo_data and photo_index + i < len(photo_data):
+            $ idx = photo_index + i
+            $ x, y = photo_location_list[i]
+            $ p = photo_data[idx]
+            $ aperture_number = aperture_group[p["aperture_index"]].replace("F", "")
+            $ img_path = "camera/{}-{}.png".format(p["location"], aperture_number)
+            $ alpha_value = iso_to_alpha.get(iso_group[p["iso_index"]], 1.0)
+            $ zoom_value = p["zoom_level"] / 2.3
+            $ location_name = p["location"]
+
+            
+            viewport:
+                xpos x
+                ypos y
+                anchor (0.5, 0.5)
+                xmaximum 400
+                ymaximum 300
+                draggable False
+                mousewheel False
+                add img_path xpos 0 ypos 0 zoom zoom_value alpha alpha_value
+        
+    for i in range(6):
+        if photo_data and photo_index + i < len(photo_data):
+            $ idx = photo_index + i
+            $ x, y = photo_location_list[i]
+
+            button:
+                xpos x
+                ypos y
+                anchor (0.5, 0.5)
+                xsize 400
+                ysize 300
+                background None
+                action Function(open_photo_viewer_with_index, idx)
+
+    imagemap:
+        ground "camera/photographs-idle.png"
+        # hover "desk_top_hover.png"
+        hover "camera/photographs-hover.png"
+
+        if desk_top_marks["marker1"] and desk_top_marks["marker2"] and desk_top_marks["marker3"] and desk_top_marks["marker4"] and desk_top_marks["marker5"]:
+            hotspot (230, 120, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 0)
+            hotspot (720, 120, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 1)
+            hotspot (1210, 120, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 2)
+
+            hotspot (230, 570, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 3)
+            hotspot (720, 570, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 4)
+            hotspot (1210, 570, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 5)
+
+    for i in range(6):
+        if photo_data and photo_index + i < len(photo_data):
+            $ idx = photo_index + i
+            $ x, y = photo_location_list[i]
+            $ p = photo_data[idx]
+            $ location_name = p["location"]
+
+            text "[location_name_dict[location_name]]" xpos x ypos y+200 anchor (0.5, 0.5) size 40 color "#0f0f0f" font "ConcertOne-Regular.ttf"
+
+    text "[current_page + 1] / [total_pages]" xpos 0.5 ypos 0.95 anchor (0.5, 0.5) size 40 color "#0f0f0f" font "ConcertOne-Regular.ttf"
+
+    imagebutton:
+        xpos 0.1
+        ypos 0.2
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action [
+            Show("study_room3_inventory"),
+            Hide("photo_album"),
+            Function(renpy.jump, "{}_label".format(current_location)),
+        ]
+
+    if photo_index > 0:
+        imagebutton:
+            xpos 0.12
+            ypos 0.95
+            at Transform(zoom=0.8)
+            anchor (1.0, 1.0)
+            idle "left_icon-idle.png"
+            hover "left_icon-hover.png"
+            action [SetScreenVariable("photo_index", max(0, photo_index - 6)),
+                    SetScreenVariable("current_page", ceil((photo_index - 6) / 6.0)),
+                    Function(renpy.restart_interaction)]
+    if photo_index + 6 < total_photos:
+        imagebutton:
+            xpos 0.98
+            ypos 0.95
+            at Transform(zoom=0.8)
+            anchor (1.0, 1.0)
+            idle "right_icon-idle.png"
+            hover "right_icon-hover.png"
+            action [SetScreenVariable("photo_index", photo_index + 6), 
+                    SetScreenVariable("current_page", ceil((photo_index + 6) / 6.0)),
+                    Function(renpy.restart_interaction)]
+
+
+
+
+        # 右上角“关闭”按钮
+        # textbutton "关闭" action Hide("photo_album") xpos 0.95 ypos 0.05
+
+        # frame:
+        #     background "#e61212"
+        #     xpos 270
+        #     ypos 120
+        #     xsize 380
+        #     ysize 380
+
+init python:
+    def open_photo_viewer_with_index(index):
+        global photo_show_index
+        global photo_data
+        photo_show_index = index
+        if index >= 0 and index < len(photo_data):
+            renpy.jump("photo_viewer_label")
+
+screen photo_viewer(index=photo_show_index):
+    tag photo_viewer
+    modal True
+
+    add Solid("#000")
+
+    # 背景
+    
+    # 获取照片信息
+    $ info = photo_data[index]
+    $ aperture_value = aperture_group[info["aperture_index"]]
+    $ zoom_value = "{:.1f}x".format(info["zoom_level"]* 0.8) 
+    $ lens_value = info["lens"]
+    $ iso_value = iso_group[info["iso_index"]]
+
+    # 生成要显示的照片路径
+    $ aperture_number = aperture_group[info["aperture_index"]].replace("F", "")
+    $ img_path = "camera/{}-{}.png".format(info["location"], aperture_number)
+
+    $ x = round(500 + 900 * info["theme_x"])
+    $ y = round(330 + 670 * info["theme_y"])
+    
+    add img_path xpos x ypos y zoom info["zoom_level"] anchor (0.5, 0.5) alpha iso_to_alpha.get(iso_value, 1.0)
+    
+    add "camera/single-photo.png"
+
+    text "Taken at [location_name_dict[info['location']]]" xpos 0.5 ypos 0.16 anchor (0.5, 0.5) size 45 color "#0f0f0f" font "ConcertOne-Regular.ttf"
+    text "Aperture: [aperture_value]" xpos 0.5 ypos 0.9 anchor (0.5, 0.5) size 40 color "#0f0f0f" font "ConcertOne-Regular.ttf"
+    text "Lens: [lens_value]" xpos 0.3 ypos 0.90 anchor (0.5, 0.5) size 40 color "#0f0f0f" font "ConcertOne-Regular.ttf"
+    text "ISO: [iso_value]" xpos 0.73 ypos 0.90 anchor (0.5, 0.5) size 40 color "#0f0f0f" font "ConcertOne-Regular.ttf"
+
+    imagebutton:
+        xpos 0.1
+        ypos 0.2
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action [
+            Hide("photo_viewer"),
+            Jump("photo_album_label"),
+        ]
 
 
 
@@ -116,21 +335,31 @@ screen desk_top_hover():
 
     imagemap:
         xalign 0.5
-        ground "desk_top.png"
+        if water_bottle_get and pill_bottle_get:
+            ground "desk_top_out_all.png"
+        elif water_bottle_get:
+            ground "desk_top_out_water.png"
+        elif pill_bottle_get:
+            ground "desk_top_out_pill.png"
+        else:
+            ground "desk_top_full.png"
+
         hover "desk_top_hover.png"
 
         if desk_top_marks["marker1"] and desk_top_marks["marker2"] and desk_top_marks["marker3"] and desk_top_marks["marker4"] and desk_top_marks["marker5"]:
             hotspot (180, 400, 275, 520) action Jump("coffee_cup_theme_label")
-            hotspot (450, 632, 820, 320) action Jump("laptop_investigate")
-            hotspot (1280, 820, 290, 290) action Jump("note_investigate")
-            hotspot (1320, 130, 500, 670) action Jump("water_bottle_investigate")
-            hotspot (900, 400, 400, 231) action Jump("poision_pill_investigate")
+            hotspot (450, 632, 820, 320) action Jump("laptop_label")
+            hotspot (1280, 820, 290, 290) action Jump("note_label")
+            if not water_bottle_get:
+                hotspot (1320, 130, 500, 670) action Jump("water_bottle_label")
+            if not pill_bottle_get:
+                hotspot (900, 400, 400, 232) action Jump("pill_label")
         else:
-            hotspot (180, 400, 275, 520) action Jump("desk_top")
-            hotspot (450, 632, 820, 320) action Jump("desk_top")
-            hotspot (1280, 820, 290, 290) action Jump("desk_top")
-            hotspot (1320, 130, 500, 670) action Jump("desk_top")
-            hotspot (900, 400, 400, 231) action Jump("desk_top")
+            hotspot (180, 400, 275, 520) action Jump("desk_top_label")
+            hotspot (450, 632, 820, 320) action Jump("desk_top_label")
+            hotspot (1280, 820, 290, 290) action Jump("desk_top_label")
+            hotspot (1320, 130, 500, 670) action Jump("desk_top_label")
+            hotspot (900, 400, 400, 232) action Jump("desk_top_label")
     
     imagebutton:
         xpos 0.98
@@ -139,7 +368,7 @@ screen desk_top_hover():
         idle "back_button.png"
         hover "back_button_hover.png"
         at button_zoom
-        action Jump("location_selection")
+        action Jump("location_selection_label")
     
     if desk_top_marks["marker1"]:
         add "em1.png" xpos 0.07 ypos 0.7
@@ -148,9 +377,9 @@ screen desk_top_hover():
     if desk_top_marks["marker3"]:
         add "em3.png" xpos 0.63 ypos 0.8
     if desk_top_marks["marker4"]:
-        add "em3.png" xpos 0.65 ypos 0.6
+        add "em4.png" xpos 0.65 ypos 0.6
     if desk_top_marks["marker5"]:
-        add "em3.png" xpos 0.48 ypos 0.45
+        add "em5.png" xpos 0.48 ypos 0.45
 
 screen chat_viewer(images):
     default index = 0
@@ -160,11 +389,14 @@ screen chat_viewer(images):
     key "K_ESCAPE" action Return()
 
     frame:
-        background "desk_top.png"
+        background "desk_top_full.png"
         yfill True
         add Solid("#00000080") 
 
-    add images[index] xpos 0.5 ypos 0.5 anchor (0.5, 0.5) zoom 1.4
+    text "click up and down arrow keys to navigate through the images" xpos 0.5 ypos 0.05 anchor (0.5, 0.5) size 30 color "#ffffff" font "ConcertOne-Regular.ttf"
+
+    add images[index] xpos 0.501 ypos 0.47 anchor (0.5, 0.5) zoom 1.24
+    add "macbook.png" xpos 0.5 ypos 0.5 anchor (0.5, 0.5) zoom 6
 
     text "[index+1]/[len(images)]" xpos 0.95 ypos 0.95 size 30
 
@@ -175,7 +407,7 @@ screen chat_viewer(images):
         idle "back_button.png"
         hover "back_button_hover.png"
         at button_zoom
-        action Jump("desk_top")
+        action Jump("desk_top_label")
 
 screen coffee_cup_theme_viewer():
     default note_book_opened = False
@@ -192,18 +424,22 @@ screen coffee_cup_theme_viewer():
         idle "back_button.png"
         hover "back_button_hover.png"
         at button_zoom
-        action Jump("desk_top")
+        action Jump("desk_top_label")
     if sample_vial_state == "empty":
         add "sample_bottle_open.png" xpos 0.29 ypos 0.5 anchor (0.5, 0.5) zoom 0.4
     elif sample_vial_state == "coffee":
         add "sample_bottle_coffee.png" xpos 0.29 ypos 0.5 anchor (0.5, 0.5) zoom 0.5
+    elif sample_vial_state == "not_taken":
+        pass
     
+    if show_animation_camera:
+        use photo_flying
     # frame:
     #         background "#e61212"
-    #         xpos 350
-    #         ypos 250
-    #         xsize 260
-    #         ysize 400
+    #         xpos 380
+    #         ypos 
+    #         xsize 230
+    #         ysize 300
 
     # imagebutton:
     #     xpos 0.83 ypos 0.4
@@ -212,11 +448,112 @@ screen coffee_cup_theme_viewer():
     #     if not coffee_cup_evidence["sample_taken"]:
     #         action [SetDict(coffee_cup_evidence, "sample_taken", True)]
 
+screen note_viewer():
+    
+    frame:
+        background "note_theme.png"
+        yfill True
 
-screen photo_flying():
-    add "coffee_cup_theme_small.png" at photo_slide_out
-    timer 1.3 action Hide("photo_flying")
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump("desk_top_label")
 
+init python:
+    fingerprint_find_global = False  # 全局变量，指纹是否已找到
+
+screen note_viewer_with_fingerprints():
+
+    # ─── 状态变量 ───
+    # default uv_on = False           # UV 灯是否开启\
+    default fingerprint_find = False
+    if scalebar_state:
+        $ fingerprint_find = True
+
+    default mouse = (960, 540)      # 灯圈中心（初始居中）
+
+    # # ─── UV 切换：右键 或者 U 键 ───
+    # key "mouseup_3" action ToggleScreenVariable("uv_on")
+    # key "u"        action ToggleScreenVariable("uv_on")
+
+    # ─── 背景图层 ───
+    add "note_theme.png"              # ① 常规视图：纸条
+
+    imagemap:
+        xalign 0.5
+        if not fingerprint_find:
+            ground "note_theme.png"
+
+            hotspot (1100, 300, 200, 180) action [
+                SetScreenVariable("fingerprint_find", True)
+            ]
+        else:
+            if scalebar_state:
+                ground "note_finger_with_bar_theme.png"  # ② 指纹视图：带刻度尺的暗幕遮罩
+            else:
+                ground "note_finger_theme.png"  # ① 指纹视图：暗幕遮罩
+
+    if fingerprint_find:
+        $ fingerprint_find_global = True  # 设置全局变量，指纹已找到
+
+    # ─── 如果还没找到指纹 ───
+    if not fingerprint_find:
+        add "note_finger_theme.png"   # ② 整张指纹图（平常被暗幕挡住）
+        add "darkness" pos mouse anchor (0.5, 0.5)  # ③ 零散遮罩跟随鼠标
+
+        # ─── 鼠标跟随 Timer ───
+        timer 0.02 repeat True action SetScreenVariable(
+            "mouse", renpy.get_mouse_pos()
+        )
+
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump("desk_top_label")
+
+
+screen pill_viewer():
+    frame:
+        background "pill_theme.png"
+        yfill True
+
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump("desk_top_label")
+
+
+screen water_bottle_viewer():
+    frame:
+        background "water_bottle_theme.png"
+        yfill True
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump("desk_top_label")
+
+    # frame:
+    #     background "#e61212"
+    #     xpos 800
+    #     ypos 0
+    #     xsize 700
+    #     ysize 1080
 
 init python:
     import datetime
@@ -246,10 +583,24 @@ screen observation_form():
 screen floor_stain_hover():
     imagemap:
         xalign 0.5
-        ground "desk_under_idle.png"
+        if not hair_get:
+            ground "desk_under_idle.png"
+        else:
+            ground "desk_under_nohair_idle.png"
         hover "desk_under_hover.png"
+        if desk_top_marks["marker6"] and desk_top_marks["marker7"]:
+            hotspot (600, 400, 550, 550) action Jump("coffee_on_floor_label")
+            if not hair_get:
+                hotspot (1000, 800, 290, 190) action Jump("hair_label")
+        else:
+            hotspot (600, 400, 550, 550) action Jump("floor_stain_label")
+            hotspot (1000, 800, 290, 190) action Jump("floor_stain_label")
 
-        hotspot (600, 400, 550, 550) action Jump("floor_stain_investigate")
+    if desk_top_marks["marker6"]:
+        add "em6.png" xpos 0.3 ypos 0.7
+
+    if desk_top_marks["marker7"]:
+        add "em7.png" xpos 0.5 ypos 0.8
 
     imagebutton:
         xpos 0.98
@@ -258,9 +609,43 @@ screen floor_stain_hover():
         idle "back_button.png"
         hover "back_button_hover.png"
         at button_zoom
-        action Jump("location_selection")
+        action Jump("location_selection_label")
 
 
+screen coffee_on_floor_viewer():
+    frame:
+        background "coffee_on_floor_theme.png"
+        yfill True
+
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump("floor_stain_label")
+    
+    # frame:
+    #     background "#e61212"
+    #     xpos 700
+    #     ypos 300
+    #     xsize 800
+    #     ysize 900
+
+screen hair_viewer():
+    frame:
+        background "hair_theme.png"
+        yfill True
+
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump("floor_stain_label")
 ## chair_backpack_hover Screen ###############################
 
 screen chair_backpack_hover():
@@ -269,7 +654,7 @@ screen chair_backpack_hover():
         ground "desk_bag.png"
         hover "desk_bag_hover.png"
 
-        hotspot (350, 150, 600, 900) action Jump("chair_backpack_investigate")
+        hotspot (350, 150, 600, 900) action Jump("collect_empty_pill")
 
     imagebutton:
         xpos 0.98
@@ -278,4 +663,4 @@ screen chair_backpack_hover():
         idle "back_button.png"
         hover "back_button_hover.png"
         at button_zoom
-        action Jump("location_selection")
+        action Jump("location_selection_label")

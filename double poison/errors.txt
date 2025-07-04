@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/custom_screens.rpy", line 198: expected ':' not found.
-    else if sample_vial_state == "coffee":
-         ^
+File "game/script.rpy", line 175: expected 'image_name_component' not found.
+    scene "#ffffff"
+          ^
 
 Ren'Py Version: Ren'Py 8.3.7.25031702
-Fri Jun 27 09:10:12 2025
+Fri Jul  4 04:36:31 2025
