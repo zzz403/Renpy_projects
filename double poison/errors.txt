@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 175: expected 'image_name_component' not found.
-    scene "#ffffff"
-          ^
+File "game/custom_screens.rpy", line 8: reached end of line when expecting ':'.
+    if evidence_collected["coffee_in_bag"] and evidence_collected["drug_pill_in_bag"] and evidence_collected["water_bottle_in_bag"]\
+                                                                                                                                    ^
 
 Ren'Py Version: Ren'Py 8.3.7.25031702
-Fri Jul  4 04:36:31 2025
+Fri Jul 11 00:34:40 2025

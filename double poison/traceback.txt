@@ -1,30 +1,28 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 183, in script
-    show expression manga0 at manga_zoom
-  File "game/script.rpy", line 183, in <module>
-    show expression manga0 at manga_zoom
-NameError: name 'manga0' is not defined
+  File "game/script.rpy", line 257, in script
+    call screen outside_study2
+ScriptError: could not find label 'study_room3'.
 
 -- Full Traceback ------------------------------------------------------------
 
 Full traceback:
-  File "game/script.rpy", line 183, in script
-    show expression manga0 at manga_zoom
-  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\ast.py", line 1124, in execute
-    show_imspec(self.imspec, atl=getattr(self, "atl", None))
-  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\ast.py", line 1080, in show_imspec
-    expression = renpy.python.py_eval(expression)
-  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\python.py", line 1218, in py_eval
-    return py_eval_bytecode(code, globals, locals)
-  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\python.py", line 1211, in py_eval_bytecode
-    return eval(bytecode, globals, locals)
-  File "game/script.rpy", line 183, in <module>
-    show expression manga0 at manga_zoom
-NameError: name 'manga0' is not defined
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\bootstrap.py", line 359, in bootstrap
+    renpy.main.main()
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\main.py", line 652, in main
+    run(restart)
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\main.py", line 148, in run
+    renpy.execution.run_context(True)
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\execution.py", line 958, in run_context
+    context.run()
+  File "game/script.rpy", line 257, in script
+    call screen outside_study2
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\script.py", line 1103, in lookup
+    raise ScriptError("could not find label '%s'." % str(original))
+ScriptError: could not find label 'study_room3'.
 
 Windows-10-10.0.26100 AMD64
 Ren'Py 8.3.7.25031702
 Double Poision 2 1.0
-Fri Jul  4 04:40:24 2025
+Fri Jul 11 00:55:22 2025

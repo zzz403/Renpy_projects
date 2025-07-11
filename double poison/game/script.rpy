@@ -7,15 +7,20 @@
 
 default note_book_opened = False
 
+default dialogue = {}
+default item_dragged = ""
+default i_overlap = False
+default ie_overlap = False
+
 default environment_SM = SpriteManager(event = environmentEvents)
 default environment_sprites = []
 default environment_items = ["lantern", "tape"] # holds environment items
-default environment_item_names = [] # holds environment item names
+default environment_item_names = ["Evidence bag"] # holds environment item names
 
 
 default toolbox_SM              = SpriteManager(update=toolboxUpdate, event=toolboxEvents)
 default toolbox_sprites         = []    # 存放所有 toolbox 精灵
-default toolbox_items           = []    # 存放所有 toolbox 物品
+default toolbox_items           = ["Evidence bag"]    # 存放所有 toolbox 物品
 default toolbox_db_enabled      = False # 是否可向下翻页
 default toolbox_ub_enabled      = False # 是否可向上翻页
 
@@ -44,7 +49,37 @@ default inventory_SM            = SpriteManager(update=inventoryUpdate, event=in
 default inventory_sprites       = []    # 存放所有 evidence 精灵
 default inventory_items         = []    # 存放 evidence 物品
 # 如果你用了 item names 的弹出文本，也一并声明
-default inventory_item_names    = ["Evidence marker",]
+default inventory_item_names    = ["Evidence marker","Camera", "Dropper", "UV Light", "Scalebar", "Swab","tape"]
+
+default evidence_item_names     = ["Evidence_Bag", "Images", "coffee_in_bag", "drug_pill_in_bag", "water_bottle_in_bag", "hair_in_bag"]
+default evidence_item_names_dict = {
+    "Evidence Bag": "evidence bag",
+    "Images": "images",
+    "coffee_in_bag": "coffee from the table",
+    "drug_pill_in_bag": "drug pill from the table",
+    "water_bottle_in_bag": "water bottle from the table",
+    "hair_in_bag": "hair from the floor",
+}
+
+default evidence_collected = {
+    "coffee_in_bag": False,
+    "drug_pill_in_bag": False,
+    "water_bottle_in_bag": False,
+    "hair_in_bag": False,
+    "fingerprint": False,
+    "coffee_on_floor": False,
+    "bagged_pill": False,
+}
+
+# default evidence_collected = {
+#     "coffee_in_bag": True,
+#     "drug_pill_in_bag": True,
+#     "water_bottle_in_bag": True,
+#     "hair_in_bag": True,
+#     "fingerprint": True,
+#     "coffee_on_floor": True,
+#     "bagged_pill": True,
+# }
 
 default inventory_db_enabled    = False # 向下翻页箭头是否可用
 default inventory_ub_enabled    = False # 向上翻页箭头是否可用
@@ -131,6 +166,19 @@ default show_color_picker  = False
 default dropper_state = "empty"
 default sample_vial_state = "not_taken"
 
+default location_name_pic_dict = {
+    "desk_top": "desk_top_full.png",
+    "floor_stain": "desk_under_idle.png",
+    "coffee_cup_theme": "coffee_cup_theme.png",
+    "laptop": "chat_8.jpg",
+    "note": "note_theme.png",
+    "note_fingerprint": "note_finger_theme.png",
+    "pill": "pill_theme.png",
+    "water_bottle": "water_bottle_theme.png",
+    "backpack": "desk_bag.png",
+    "coffee_on_floor": "coffee_on_floor_theme.png",
+    "hair": "hair_theme.png",
+}
 
 ##############################################################################
 default scalebar_state = False
@@ -165,6 +213,22 @@ image manga5 = "manga5.png"
 image manga6 = "manga6.png"
 image manga7 = "manga7.png"
 
+image animat1 = "animation/1.png"
+image animat2 = "animation/2.png"
+image animat3 = "animation/3.png"
+image animat4 = "animation/4.png"
+image animat5 = "animation/5.png"
+image animat6 = "animation/6.png"  # rill
+image animat7 = "animation/7.png"  # rill
+image animat8 = "animation/8.png"
+image animat9 = "animation/9.png"
+image animat10 = "animation/10.png"
+image animat11 = "animation/11.png"
+image animat12 = "animation/12.png"
+image animat13 = "animation/13.png"
+image animat14 = "animation/14.png"
+image animat15 = "animation/15.png"
+
 init python:
     def on_color_chosen(color):
         global picked_color
@@ -172,8 +236,54 @@ init python:
         renpy.hide_screen("color_picker")
 
 label start:
-    jump show_manga_sequence
+    define config.rollback_enabled = False
+    # "Hmm, that doesn't seem to work. Let's try something else."
+    jump animate_sequence
+    
+    # jump toolbox_init
     return
+
+label gloves1:
+    show hands
+    call screen gloves
+
+label gloves2:
+    hide hands
+    show gloved_hands
+    pause 
+    "Great job, now click the doorknob to head inside!"
+    hide gloved_hands
+    call screen outside_study2
+
+
+label animate_sequence:
+    # 这里是动画序列的标签
+    scene black
+    show animat1
+
+    "Hey Nina, the University of Toronto Manga Club just released a new comic. Want to check it out? I heard it’s a mystery thriller."
+    window hide
+    show animat2
+    $ renpy.pause(9)
+    show animat3
+    $ renpy.pause(9)
+
+    call screen click_manga
+
+
+screen click_manga:
+    imagemap:
+        ground "animation/4.png"
+
+        hotspot (900, 700, 500, 300) action Jump("show_manga_sequence")
+
+    # frame:
+    #     background "#e61212"
+    #     xpos 900
+    #     ypos 700
+    #     xsize 500
+    #     ysize 300
+
 
 label show_manga_sequence:
     # i 用来遍历 manga_list
@@ -181,13 +291,13 @@ label show_manga_sequence:
     # 纯白 background zoom 6
     scene white at white_zoom
     show manga0 at manga_zoom_begin
-    pause
+    $ renpy.pause(1.0)
     $ i += 1
     while i < len(manga_list):
         # 显示当前图片，并套用 zoom 动画
         show expression manga_list[i] at manga_zoom
         # 等待玩家点击或按键
-        pause
+        $ renpy.pause(1.0) if i != len(manga_list) - 1 else renpy.pause(3.0)
         # 隐藏当前图片
         hide expression manga_list[i]
 
@@ -195,10 +305,74 @@ label show_manga_sequence:
         $ i += 1
 
     # 全部展示完毕后返回
-    jump toolbox_init
+    jump animate_sequence_2
+
+label animate_sequence_2:
+    scene black
+    show animat6
+    $ i = 0
+    while i < 10:
+        hide animat6
+        show animat7
+        $ renpy.pause(0.2)
+        hide animat7
+        show animat6
+        $ renpy.pause(0.2)
+        $ i += 1
+    show animat8
+    $ renpy.pause(5)
+    show animat9
+    $ renpy.pause(6)
+    show animat10
+    $ renpy.pause(5)
+    show animat11
+    $ renpy.pause(5)
+    window show
+    show animat12
+    "You’d better get going. Oh, and one more thing—"
+    show animat13
+    "We got some new gear for you. Don’t forget to take the camera and snap some photos while you’re investigating."
+    window hide
+    show animat14
+    $ renpy.pause(5.0)
+    call screen ready_to_start
+
+screen ready_to_start:
+    imagemap:
+        ground "animation/15.png"
+        hotspot (0, 0, 1920, 1080) action Jump("ready_to_start_label")
+
+label ready_to_start_label:
+    scene outside_study
+    call screen outside_study1
 
 label toolbox_init:
     # Initialize the toolbox with items
+    hide animat1
+    hide animat2
+    hide animat3
+    hide animat4
+    hide animat6
+    hide animat7
+    hide animat8
+    hide animat9
+    hide animat10
+    hide animat11
+    hide animat12
+    hide animat13
+    hide animat14
+    hide animat15
+
+    hide manga0
+    hide manga1
+    hide manga2
+    hide manga3
+    hide manga4
+    hide manga5 
+    hide manga6
+    hide manga7
+
+    scene black
     python:
         # adds tape and ziploc bag to inventory
         addToInventory(["evidence_bag"])
@@ -372,8 +546,17 @@ label location_selection_label:
     "Please select a location to explore."
     $ renpy.pause()
 
+label location_selection_mistake:
+    scene white at white_zoom
+    show location_selection
+    "Why you even want to take a photo here??? Try somewhere in the room please."
+    jump location_selection_label
+
 transform half_size:
     zoom 0.5
+
+transform double_size:
+    zoom 1.2
 
 label desk_top_label:
     $current_location = "desk_top"
@@ -488,6 +671,9 @@ label note_fingerprint_label:
     call screen note_viewer_with_fingerprints
     return
 
+label normal_uv_light_viewer:
+    call screen normal_uv_light_viewer
+
 label pill_label:
     $current_location = "pill"
     if show_animation_camera:
@@ -545,6 +731,8 @@ label hair_label:
 label photo_viewer_label:
     call screen photo_viewer(index=photo_show_index)
 
+label camera_label:
+    call screen camera_preview_ui
 
 transform button_zoom:
     zoom 0.4
@@ -552,8 +740,6 @@ transform button_zoom:
 label kastle_meyer_quiz:
     image kastle_meyer_quiz = "coffee_on_floor_theme.png"
     scene kastle_meyer_quiz
-    # 简短介绍
-    "Let's review the Kastle–Meyer presumptive blood test."
 
     # 问题 1
     "1) Which reagent is applied first to the swab tip?"
@@ -611,6 +797,7 @@ label km_q3_wrong:
 
 label km_quiz_end:
     "Great job! Seems like this is not a blood, but a coffee stain."
+    $ evidence_collected["coffee_on_floor"] = True
     jump floor_stain_label
     
 label collect_empty_pill:
@@ -618,13 +805,14 @@ label collect_empty_pill:
     image empty_pill = "desk_bag.png"
     scene empty_pill
 
-    "I see an empty pill inside the bag..."
-
+    "I see an pill bottle in the bag, we will send it to the lab for further analysis."
+    $ evidence_collected["bagged_pill"] = True
     # 把 empty_pill 加进背包
     # $ addToInventory(["empty_pill"])
 
-    # 可选暂停一下让玩家读
-    pause
-
     # 返回到查看背包的流程
     jump backpack_label
+
+
+label finish_label:
+    return

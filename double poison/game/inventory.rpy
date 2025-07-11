@@ -127,7 +127,7 @@ init python:
                                         item1.x = item1.original_x
                                         item1.y = item1.original_y
                                         item1.zorder = 0
-                                        characterSay(who = "", what = ["Hmm, that doesn't seem to work. Let's try something else."])
+                                        renpy.notify("Hmm, that doesn't seem to work.")
                                         break
                             if i_combine == False:
                                     for item3 in environment_sprites:
@@ -143,6 +143,8 @@ init python:
                                                 removeEnvironmentItem(item3)
                                                 addToInventory(["coffee_in_bag"])
                                                 renpy.show_screen("inspectItem", ["coffee_in_bag"])
+                                                global evidence_collected
+                                                evidence_collected["coffee_in_bag"] = True
                                                 inventory_SM.redraw(0)
                                                 environment_SM.redraw(0)
                                                 renpy.restart_interaction()
@@ -156,6 +158,8 @@ init python:
                                                 removeEnvironmentItem(item3)
                                                 addToInventory(["drug_pill_in_bag"])
                                                 renpy.show_screen("inspectItem", ["drug_pill_in_bag"])
+                                                global evidence_collected
+                                                evidence_collected["drug_pill_in_bag"] = True
                                                 global pill_bottle_get
                                                 pill_bottle_get = True
                                                 characterSay(who = "", what = ["Great job! Let's head back and see if we can find anything else."])
@@ -169,6 +173,8 @@ init python:
                                                 removeEnvironmentItem(item3)
                                                 addToInventory(["water_bottle_in_bag"])
                                                 renpy.show_screen("inspectItem", ["water_bottle_in_bag"])
+                                                global evidence_collected
+                                                evidence_collected["water_bottle_in_bag"] = True
                                                 global water_bottle_get
                                                 water_bottle_get = True
                                                 characterSay(who = "", what = ["Great job! Let's head back and see if we can find anything else."])
@@ -183,6 +189,8 @@ init python:
                                                 renpy.show_screen("inspectItem", ["hair_in_bag"])
                                                 global hair_get
                                                 hair_get = True
+                                                global evidence_collected
+                                                evidence_collected["hair_in_bag"] = True
                                                 characterSay(who = "", what = ["Great job! Let's head back and see if we can find anything else."])
                                                 inventory_SM.redraw(0)
                                                 environment_SM.redraw(0)
@@ -192,7 +200,7 @@ init python:
                                                 item1.x = item1.original_x
                                                 item1.y = item1.original_y
                                                 item1.zorder = 0
-                                                characterSay(who = "", what = ["Hmm, that doesn't seem to work. Let's try something else."])
+                                                renpy.notify("Hmm, that doesn't seem to work.")
                                                 break
                             if i_combine == False and ie_combine == False:
                                 item1.x = item1.original_x
@@ -270,7 +278,7 @@ init python:
                                         inventory_sprites[inventory_items.index("lantern")].item_image = lantern_image
                                         inventory_sprites[inventory_items.index("lantern")].state = "lit"
                                         renpy.show_screen("inspectItem", ["lantern"])
-                                        characterSay(who = "Claire", what = ["The lantern is now lit!"], inspectItem = True)
+                                        renpy.notify("Hmm, that doesn't seem to work.")
                                         inventory_SM.redraw(0)
                                         renpy.restart_interaction()
                                         break
@@ -278,7 +286,7 @@ init python:
                                         item1.x = item1.original_x
                                         item1.y = item1.original_y
                                         item1.zorder = 0
-                                        characterSay(who = "", what = ["Hmm, that doesn't seem to work. Let's try something else."])
+                                        renpy.notify("Hmm, that doesn't seem to work.")
                                         break
                             if i_combine == False:
                                 for item3 in environment_sprites:
@@ -317,7 +325,7 @@ init python:
                                                     spr.set_child(t)
                                                     spr.item_image = full_img
                                                     break
-                                            characterSay(who = "", what = ["Great, we have a sample of the coffee cup!\n and we can put it in to the evidence box."])
+                                            characterSay(who = "", what = ["Great, we have a sample of the coffee cup!\n and we can put it in to the evidence bottle."])
                                             
                                             toolbox_SM.redraw(0)
                                             environment_SM.redraw(0)
@@ -343,7 +351,7 @@ init python:
 
                                             characterSay(
                                                 who="",
-                                                what=["sample taken! Now we can analyze it further."],
+                                                what=["sample taken! Now we can put it in the evidence bag!"]
                                             )
 
                                             # 4. 重新绘制并结束交互
@@ -372,7 +380,9 @@ init python:
                                             print("fingerprint_find_global = True")
                                             global scalebar_state
                                             scalebar_state = True
-                                            characterSay(who = "", what = ["Great, we have a fingerprint sample!"])
+                                            characterSay(who = "", what = ["Great, I'll let my assistant finish the next collection, please take a picture of what it looks like now."])
+                                            global evidence_collected
+                                            evidence_collected["fingerprint"] = True
                                             toolboxpop_SM.redraw(0)
                                             environment_SM.redraw(0)
                                             renpy.restart_interaction()
@@ -381,8 +391,8 @@ init python:
                                             ie_combine = True
                                             removeEnvironmentItem(item3)
 
-                                            characterSay(who = "", what = ["Great, we have a sample of the coffee on the floor!\n and we can put it in to the evidence box."])
-                                            
+                                            characterSay(who = "", what = ["What is that? Blood? Let's test it."])
+
                                             toolbox_SM.redraw(0)
                                             environment_SM.redraw(0)
                                             renpy.restart_interaction()
@@ -400,7 +410,9 @@ init python:
                                                 print("item1.y >= 960")
                                                 setItemVisibility(item1, False)
                                             item1.zorder = 0
-                                            characterSay(who = "", what = ["Hmm, that doesn't seem to work. Let's try something else."])
+                                            renpy.notify("Hmm, that doesn't seem to work.")
+                                            # characterSay(who = "", what = ["Hmm, that doesn't seem to work. Let's try something else."])
+
                                             break
                             if i_combine == False and ie_combine == False:
                                 global toolbox_index
@@ -434,9 +446,9 @@ init python:
                                 renpy.restart_interaction()
                                 break
                             elif item.type == "uv_light":
-                                if current_location == "note":
-                                    renpy.show_screen("toolboxItemUvLight", item=item)
-                                    renpy.restart_interaction()
+                                # if current_location == "note":
+                                renpy.show_screen("toolboxItemUvLight", item=item)
+                                renpy.restart_interaction()
                                 break
                             else:
                                 renpy.show_screen("toolboxItemMenu", item = item)
@@ -1247,6 +1259,8 @@ screen toolboxItemClick(item):
 
 screen toolboxItemCamera(item):
     zorder 7
+    
+
     frame:
         xysize (toolbox_slot_size[0], toolbox_slot_size[1])
         background "#FFFFFF30"
@@ -1255,12 +1269,18 @@ screen toolboxItemCamera(item):
 
         imagebutton auto "UI/view-inventory-item-%s.png" align (0.0, 0.5) at half_size action [ Show("inspectItem", items=[item.type]), Hide("toolboxItemCamera") ]
 
-        imagebutton auto "UI/expand-inventory-item-%s.png" align (1.0, 0.5) at half_size action [
-            Hide("toolbox"),
-            Function(renpy.show_screen, "camera_preview_ui"),
-            Hide("toolboxItemCamera"),
-            Function(renpy.hide_screen, "study_room3_inventory")
-        ]
+        if current_location == "location_selection":
+            imagebutton auto "UI/expand-inventory-item-%s.png" align (1.0, 0.5) at half_size action [
+                    Hide("toolboxItemCamera"),
+                    Jump("location_selection_mistake")
+                ]
+        else:
+            imagebutton auto "UI/expand-inventory-item-%s.png" align (1.0, 0.5) at half_size action [
+                Hide("toolbox"),
+                Hide("toolboxItemCamera"),
+                Function(renpy.hide_screen, "study_room3_inventory"),
+                Function(renpy.jump, "camera_label")
+            ]
 
 screen toolboxItemUvLight(item):
     zorder 7
@@ -1277,12 +1297,21 @@ screen toolboxItemUvLight(item):
         ]
 
         # 展开按钮：隐藏 UI，然后跳转到 label my_uv_label
-        imagebutton auto "UI/expand-inventory-item-%s.png" align (1.0, 0.5) at half_size action [
-            # Hide("toolbox"),
-            Hide("toolboxItemUvLight"),
-            # Hide("study_room3_inventory"),
-            Jump("note_fingerprint_label")
-        ]
+        if "note" in current_location:
+            imagebutton auto "UI/expand-inventory-item-%s.png" align (1.0, 0.5) at half_size action [
+                # Hide("toolbox"),
+                Hide("toolboxItemUvLight"),
+                # Hide("study_room3_inventory"),
+                Jump("note_fingerprint_label")
+            ]
+        elif not "location_selection" in current_location:
+            imagebutton auto "UI/expand-inventory-item-%s.png" align (1.0, 0.5) at half_size action [
+                # Hide("toolbox"),
+                Hide("toolboxItemUvLight"),
+                # Hide("study_room3_inventory"),
+                Jump("normal_uv_light_viewer")
+            ]
+
 
 
 # toolbox pop-up item menu
@@ -1308,9 +1337,10 @@ screen inspectItem(items):
         xfill True
         yfill True
         action If(len(items) > 1, true = RemoveFromSet(items, items[0]), false= [Hide("inspectItem"), If(len(dialogue) > 0, true= Show("characterSay"), false= NullAction())])
-        # image "Items Pop Up/items-pop-up-bg.png" align (0.5, 0.55) at half_size
+        image "Items Pop Up/items-pop-up-bg.png" align (0.5, 0.55) at half_size
 
         python:
+            # print("items: ", items)
             item_name = ""
             item_desc = ""
             for name in inventory_item_names:
@@ -1318,13 +1348,15 @@ screen inspectItem(items):
                 temp_name = name.replace(" ", "_")
                 if temp_name.lower() == items[0]:
                     item_name = name
+            if item_name == "":
+                print("items: ", items)
+                for name in evidence_item_names:
+                    if name.lower() == items[0]:
+                        item_name = evidence_item_names_dict[name]
 
         text "{}".format(item_name) size 30 align (0.5, 0.65) color "#000000"
-        # if items[0] == "lantern":
-        #     $lantern_state = inventory_sprites[inventory_items.index("lantern")].state
-        #     image "Items Pop Up/{}-{}-pop-up.png".format("lantern", lantern_state) align (0.5, 0.5) at half_size
-        # else:
-        #     image "Items Pop Up/{}-pop-up.png".format(items[0]) align (0.5, 0.5) at half_size
+        
+        image "Inventory Items/inventory-{}.png".format(items[0]) align (0.5, 0.5) at double_size
 
 """
 Displays dialogue box.
@@ -1346,9 +1378,9 @@ screen characterSay(who = None, what = None, jump_to = None):
                 text dialogue["who"]
 
         if what is not None:
-            text what id "what" xpos 0.25 ypos 0.4 xanchor 0.0
+            text what id "what" xpos 0.35 ypos 1 xanchor 0.0
         else:
-            text dialogue["what"][0] xpos 0.3 ypos 0.1 xanchor 0.0
+            text dialogue["what"][0] id "what" xpos 0.35 ypos 0.24 xanchor 0.0 xmaximum 900
     if what is None:
         key "K_SPACE" action If(len(dialogue["what"]) > 1, true= RemoveFromSet(dialogue["what"], dialogue["what"][0]), false= [Hide("characterSay"), SetVariable("dialogue", {}), If(jump_to is not None, true = Jump("{}".format(jump_to)), false = NullAction())])
     else:

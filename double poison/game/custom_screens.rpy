@@ -5,12 +5,21 @@ screen study_room_hover():
         yfill True
 
     imagemap:
-        xalign 0.5
-        ground "location_selection.png"
-        hover "location_selection_hover.png"
-        hotspot (50, 160, 650, 450) action Jump("desk_top_label")
-        hotspot (50, 620, 550, 400) action Jump("floor_stain_label")
-        hotspot (600, 620, 650, 400) action Jump("backpack_label")
+        if evidence_collected["coffee_in_bag"] and evidence_collected["drug_pill_in_bag"] and evidence_collected["water_bottle_in_bag"] and evidence_collected["hair_in_bag"] and evidence_collected["fingerprint"] and evidence_collected["coffee_on_floor"] and evidence_collected["bagged_pill"]:
+            xalign 0.5
+            ground "location_selection_finish_idle.png"
+            hover "location_selection_finish_hover.png"
+            hotspot (50, 160, 650, 450) action Jump("desk_top_label")
+            hotspot (50, 620, 550, 400) action Jump("floor_stain_label")
+            hotspot (600, 620, 650, 400) action Jump("backpack_label")
+            hotspot (700, 160, 550, 450) action Jump("finish_label")
+        else:
+            xalign 0.5
+            ground "location_selection.png"
+            hover "location_selection_hover.png"
+            hotspot (50, 160, 650, 450) action Jump("desk_top_label")
+            hotspot (50, 620, 550, 400) action Jump("floor_stain_label")
+            hotspot (600, 620, 650, 400) action Jump("backpack_label")
 
 
 label prompt_place_scale:
@@ -208,13 +217,19 @@ screen photo_album():
         # hover "desk_top_hover.png"
         hover "camera/photographs-hover.png"
 
-        if desk_top_marks["marker1"] and desk_top_marks["marker2"] and desk_top_marks["marker3"] and desk_top_marks["marker4"] and desk_top_marks["marker5"]:
+        # if desk_top_marks["marker1"] and desk_top_marks["marker2"] and desk_top_marks["marker3"] and desk_top_marks["marker4"] and desk_top_marks["marker5"]:
+        if photo_index < total_photos:
             hotspot (230, 120, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 0)
+        if photo_index + 1 < total_photos:
             hotspot (720, 120, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 1)
+        if photo_index + 2 < total_photos:
             hotspot (1210, 120, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 2)
 
+        if photo_index + 3 < total_photos:
             hotspot (230, 570, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 3)
+        if photo_index + 4 < total_photos:
             hotspot (720, 570, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 4)
+        if photo_index + 5 < total_photos:
             hotspot (1210, 570, 460, 460) action Function(open_photo_viewer_with_index, photo_index + 5)
 
     for i in range(6):
@@ -355,6 +370,7 @@ screen desk_top_hover():
             if not pill_bottle_get:
                 hotspot (900, 400, 400, 232) action Jump("pill_label")
         else:
+            text "Put all the evidence markers to begin the investigation." xpos 0.5 ypos 0.05 anchor (0.5, 0.5) size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
             hotspot (180, 400, 275, 520) action Jump("desk_top_label")
             hotspot (450, 632, 820, 320) action Jump("desk_top_label")
             hotspot (1280, 820, 290, 290) action Jump("desk_top_label")
@@ -476,10 +492,6 @@ screen note_viewer_with_fingerprints():
 
     default mouse = (960, 540)      # 灯圈中心（初始居中）
 
-    # # ─── UV 切换：右键 或者 U 键 ───
-    # key "mouseup_3" action ToggleScreenVariable("uv_on")
-    # key "u"        action ToggleScreenVariable("uv_on")
-
     # ─── 背景图层 ───
     add "note_theme.png"              # ① 常规视图：纸条
 
@@ -518,6 +530,29 @@ screen note_viewer_with_fingerprints():
         hover "back_button_hover.png"
         at button_zoom
         action Jump("desk_top_label")
+
+screen normal_uv_light_viewer():
+    default mouse = (960, 540)
+    imagemap:
+        xalign 0.5
+        ground location_name_pic_dict[current_location]
+
+    add location_name_pic_dict[current_location]
+    add "darkness" pos mouse anchor (0.5, 0.5)
+
+    # ─── 鼠标跟随 Timer ───
+    timer 0.02 repeat True action SetScreenVariable(
+        "mouse", renpy.get_mouse_pos()
+    )
+
+    imagebutton:
+        xpos 0.98
+        ypos 0.95
+        anchor (1.0, 1.0)
+        idle "back_button.png"
+        hover "back_button_hover.png"
+        at button_zoom
+        action Jump(current_location + "_label")
 
 
 screen pill_viewer():
@@ -593,6 +628,7 @@ screen floor_stain_hover():
             if not hair_get:
                 hotspot (1000, 800, 290, 190) action Jump("hair_label")
         else:
+            text "Put all the evidence markers to begin the investigation." xpos 0.5 ypos 0.05 anchor (0.5, 0.5) size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
             hotspot (600, 400, 550, 550) action Jump("floor_stain_label")
             hotspot (1000, 800, 290, 190) action Jump("floor_stain_label")
 
@@ -664,3 +700,29 @@ screen chair_backpack_hover():
         hover "back_button_hover.png"
         at button_zoom
         action Jump("location_selection_label")
+
+
+screen outside_study1():
+    frame:
+        xcenter 0.5 ycenter 0.5
+        hbox:
+            spacing 30
+            xsize 800
+            text "This is the study room where the victim was allegedly attacked! Before we go inside and investigate, let's put on some vinyl gloves as a precaution! \n\n>> press space to continue"
+    key "K_SPACE" action Jump("gloves1")
+
+screen outside_study2():
+    imagebutton:
+        xalign 0.625
+        yalign 0.616
+        idle "doorknob_idle"
+        hover "doorknob_hover"
+        action Jump("toolbox_init")
+
+screen gloves():
+    imagebutton:
+        xalign 0.5
+        yalign 0.5
+        idle "gloves_box_idle"
+        hover "gloves_box_hover"
+        action Jump("gloves2")
