@@ -1,0 +1,28 @@
+﻿I'm sorry, but an uncaught exception occurred.
+
+While running game code:
+  File "game/script.rpy", line 280, in script
+    call screen materials_lab_screen
+ScriptError: could not find label 'IPC'.
+
+-- Full Traceback ------------------------------------------------------------
+
+Full traceback:
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\bootstrap.py", line 359, in bootstrap
+    renpy.main.main()
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\main.py", line 652, in main
+    run(restart)
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\main.py", line 148, in run
+    renpy.execution.run_context(True)
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\execution.py", line 958, in run_context
+    context.run()
+  File "game/script.rpy", line 280, in script
+    call screen materials_lab_screen
+  File "C:\Users\August\Downloads\renpy-8.3.7-sdk\renpy\script.py", line 1103, in lookup
+    raise ScriptError("could not find label '%s'." % str(original))
+ScriptError: could not find label 'IPC'.
+
+Windows-10-10.0.26100 AMD64
+Ren'Py 8.3.7.25031702
+Forensics Lab L1 Prototype 1.0
+Tue Jul 22 22:30:08 2025
