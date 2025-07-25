@@ -37,10 +37,9 @@ screen camera_preview_ui():
             Function(safe_camera_data, theme_x, theme_y, theme_zoom, aperture, iso_index, focal_len),
             Call("prompt_place_scale")
         ]
-
-    # 全屏黑背景
+    
     frame:
-        background "#000"
+        background "#000000ff"
         xysize (config.screen_width, config.screen_height)
 
     # 中上方预览图
@@ -53,6 +52,20 @@ screen camera_preview_ui():
     elif aperture_group[aperture] == "F16":
         add "camera/[current_location]-16.png" xpos theme_x ypos theme_y anchor (0.5 , 0.5) zoom theme_zoom alpha iso_to_alpha.get(iso_group[iso_index], 1.0)
 
+    if infomation:
+        # 半透明背景板
+        add Solid("#00000080") xpos 608 ypos 376 xysize (400, 240)
+
+        vbox:
+            xpos 608 ypos 376
+            xsize 500
+            ysize 240
+            spacing 6
+
+            text "ISO: [iso_group[iso_index]]" size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
+            text "Aperture: [aperture_group[aperture]]" size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
+            text "Focal Length: [focal_len]" size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
+
     # imagemap 实现底部按钮 hover 切换效果
     imagemap:
         ground "camera/camera-idle.png"
@@ -60,40 +73,46 @@ screen camera_preview_ui():
         xpos 0.5 ypos 1.0 anchor (0.5, 1.0)
 
         # left button
-        hotspot (1555, 830, 110, 110) action SetVariable("theme_x", theme_x + 0.02)
+        hotspot (1471, 547, 60, 58) action SetVariable("theme_x", theme_x + 0.02)
 
         # right button
-        hotspot (1755, 829, 110, 110) action SetVariable("theme_x", theme_x - 0.02)
+        hotspot (1599, 556, 75, 48) action SetVariable("theme_x", theme_x - 0.02)
 
         # up button
-        hotspot (1655, 729, 110, 110) action SetVariable("theme_y", theme_y + 0.02)
+        hotspot (1531, 482, 69, 75) action SetVariable("theme_y", theme_y + 0.02)
 
         # down button
-        hotspot (1658, 929, 110, 110) action SetVariable("theme_y", theme_y - 0.02)
-
+        hotspot (1547, 616, 47, 55) action SetVariable("theme_y", theme_y - 0.02)
+        
         # zoom in button
-        hotspot (1455, 740, 110, 110) action If(
-            (focal_len == "50mm" and theme_zoom < 2.0) or (focal_len == "105mm" and theme_zoom < 4.0),
-            SetVariable("theme_zoom", theme_zoom + 0.02)
+        # 方式 A：位置参数
+        hotspot (1433, 350, 110, 110) action If(
+            (focal_len == "50mm" and theme_zoom < 2.0) or
+            (focal_len == "105mm" and theme_zoom < 4.0),
+            SetVariable("theme_zoom", theme_zoom + 0.02),             # true 分支
+            Notify("Cannot zoom in further—please switch lenses first.")  # false 分支
         )
 
+
         # zoom out button
-        hotspot (1460, 929, 110, 110) action If(
-            (focal_len == "50mm" and theme_zoom > 1.0) or (focal_len == "105mm" and theme_zoom > 3.0),
-            SetVariable("theme_zoom", theme_zoom - 0.02)
+        hotspot (1575, 346, 117, 116) action If(
+            (focal_len == "50mm" and theme_zoom > 1.0) or 
+            (focal_len == "105mm" and theme_zoom > 3.0),
+            SetVariable("theme_zoom", theme_zoom - 0.02),
+            Notify("Cannot zoom out further—please switch lenses first.")
         )
 
         
         # Aperture less button
-        hotspot (1100, 890, 110, 110) action SetVariable("aperture", max(0, aperture - 1))
+        hotspot (433, 499, 133, 130) action SetVariable("aperture", max(0, aperture - 1))
 
         # Aperture more button
-        hotspot (1300, 890, 110, 110) action SetVariable("aperture", min(3, aperture + 1))
+        hotspot (426, 343, 146, 127) action SetVariable("aperture", min(3, aperture + 1))
 
-        text "[aperture_group[aperture]]" xpos 0.658 ypos 0.88 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
+        # text "[aperture_group[aperture]]" xpos 0.658 ypos 0.88 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
 
         # take photo button
-        hotspot (850, 780, 250, 250) action [
+        hotspot (1663, 76, 187, 159) action [
             Hide("camera_preview_ui"),
             Show("study_room3_inventory"),
             Function(safe_camera_data, theme_x, theme_y, theme_zoom, aperture, iso_index, focal_len),
@@ -102,36 +121,29 @@ screen camera_preview_ui():
         ]
 
         # iso button +
-        hotspot (550, 890, 110, 110) action SetVariable("iso_index", max(0, iso_index - 1))
+        hotspot (443, 827, 131, 141) action SetVariable("iso_index", max(0, iso_index - 1))
 
         # iso button -
-        hotspot (720, 890, 110, 110) action SetVariable("iso_index", min(4, iso_index + 1))
+        hotspot (422, 656, 153, 139) action SetVariable("iso_index", min(4, iso_index + 1))
 
-        text "[iso_group[iso_index]]" xpos 0.352 ypos 0.87 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
+        # text "[iso_group[iso_index]]" xpos 0.352 ypos 0.87 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
 
         # switch focal length button 50mm
-        hotspot (10, 730, 500, 150) action [ 
+        hotspot (1432, 710, 287, 117) action [ 
             SetVariable("focal_len", "50mm"), 
             SetVariable("theme_zoom", clamp(theme_zoom, 1.0, 2.0)) 
         ]
         # switch focal length button 105mm
-        hotspot (10, 900, 500, 150) action [ 
+        hotspot (1434, 852, 281, 111) action [ 
             SetVariable("focal_len", "105mm"), 
             SetVariable("theme_zoom", clamp(theme_zoom, 3.0, 4.0)) 
         ]
 
-        text "Current Focal Length: \n        [focal_len]" xpos 0.125 ypos 0.6 anchor (0.5, 0.5) size 40 color "#ffffff" font "ConcertOne-Regular.ttf"
-
-        text "50mm" xpos 0.15 ypos 0.74 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
-
-        text "105mm" xpos 0.15 ypos 0.897 anchor (0.5, 0.5) size 63 color "#ffffff" font "ConcertOne-Regular.ttf"
-
-        # frame:
-        #     background "#e61212"
-        #     xpos 10
-        #     ypos 900
-        #     xsize 500
-        #     ysize 150
+        hotspot (529, 157, 120, 112) action If(
+            (infomation == True),
+            [SetVariable("infomation", False)],
+            [SetVariable("infomation", True)]
+        )
 
 init python:
     from math import ceil
@@ -180,6 +192,7 @@ screen photo_album():
         if photo_data and photo_index + i < len(photo_data):
             $ idx = photo_index + i
             $ x, y = photo_location_list[i]
+            $ x -= 60
             $ p = photo_data[idx]
             $ aperture_number = aperture_group[p["aperture_index"]].replace("F", "")
             $ img_path = "camera/{}-{}.png".format(p["location"], aperture_number)
@@ -320,7 +333,7 @@ screen photo_viewer(index=photo_show_index):
     $ img_path = "camera/{}-{}.png".format(info["location"], aperture_number)
 
     $ x = round(500 + 900 * info["theme_x"])
-    $ y = round(330 + 670 * info["theme_y"])
+    $ y = round(100 + 670 * info["theme_y"])
     
     add img_path xpos x ypos y zoom info["zoom_level"] anchor (0.5, 0.5) alpha iso_to_alpha.get(iso_value, 1.0)
     

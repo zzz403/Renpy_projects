@@ -107,6 +107,96 @@ init python:
     # Additional attribute for label
     label.dipped = False
 
+    pills = Evidence_v2(
+        name = "pills",
+        image = "pills %s",
+        description = "Suspicious pills found at the crime scene. Need to be ground for analysis."
+    )
+
+    grinded_pills = Evidence_v2(
+        name = "grinded pills",
+        image = "grinded_pills %s",
+        description = "Ground pills ready for chemical analysis."
+    )
+
+    # Initially disable grinded_pills since they need to be created
+    grinded_pills.disable_evidence()
+
+    bottled_powder = Evidence_v2(
+        name = "bottled powder",
+        image = "bottled_powder %s",
+        description = "Ground pills stored in a bottle, ready for chemical testing."
+    )
+
+    # Initially disable bottled_powder since it needs to be created
+    bottled_powder.disable_evidence()
+
+    # Teflon digestion vessel with pills and reagents
+    teflon_pills = Evidence_v2(
+        name = "teflon digestion vessel",
+        image = "teflon_pills %s",
+        description = "Teflon digestion vessel containing ground pills and all required reagents (nitric acid, hydrofluoric acid, hydrogen peroxide). Ready for microwave digestion."
+    )
+
+    # Initially disable teflon_pills since it needs to be created
+    teflon_pills.disable_evidence()
+
+    # Digested sample ready for ICP analysis
+    digested_sample = Evidence_v2(
+        name = "digested sample",
+        image = "digested_sample %s",
+        description = "Clear, completely digested sample ready for ICP analysis. Processed through three-step microwave digestion: 250W, 400W, 600W for 10 minutes each."
+    )
+
+    # Initially disable digested_sample since it needs to be created
+    digested_sample.disable_evidence()
+
+    # Diluted sample ready for ICP analysis
+    diluted_sample = Evidence_v2(
+        name = "diluted sample",
+        image = "diluted_sample %s",
+        description = "Digested sample diluted to 50 mL with deionized water in polypropylene container. Ready for ICP analysis."
+    )
+
+    # Initially disable diluted_sample since it needs to be created
+    diluted_sample.disable_evidence()
+
+    # Deionized water for dilution
+    deionized_water = Evidence_v2(
+        name = "deionized water",
+        image = "deionized_water %s",
+        description = "High-purity deionized water for sample dilution to 50 mL total volume."
+    )
+
+    # ICP analysis results
+    icp_results = Evidence_v2(
+        name = "ICP analysis results",
+        image = "icp_results %s",
+        description = "Elemental analysis results from ICP showing concentration of selected elements in ppm."
+    )
+
+    # Initially disable icp_results since it needs to be created
+    icp_results.disable_evidence()
+
+    # Digestion reagents for chemical analysis
+    nitric_acid = Evidence_v2(
+        name = "nitric acid",
+        image = "nitric_acid %s",
+        description = "Concentrated nitric acid (4 mL) for sample digestion."
+    )
+
+    hydrofluoric_acid = Evidence_v2(
+        name = "hydrofluoric acid", 
+        image = "hydrofluoric_acid %s",
+        description = "Hydrofluoric acid (0.5 mL) for silicate sample digestion."
+    )
+
+    hydrogen_peroxide = Evidence_v2(
+        name = "hydrogen peroxide",
+        image = "hydrogen_peroxide %s", 
+        description = "Hydrogen peroxide (2 mL) for oxidative digestion."
+    )
+
     fingerprint = Evidence_v2(
         name = "fingerprint",
         image = "fingerprint %s",
@@ -174,6 +264,19 @@ screen casefile_physical():
         imagebutton:
             auto fingerprint.image at Transform(zoom=0.7)
             action If(location == "afis" and pressed == "import", [SetVariable("imported_print", "print_1"), Jump("import_print")])
+
+    hbox:
+        xpos 0.2 ypos 0.51
+        imagebutton:
+            if not pills.processed:
+                auto "pills %s" at Transform(zoom=0.7)
+                action If(location == "grinder", [ToggleScreen("casefile_physical"), Jump("grinder_pills")])
+            elif pills.processed and grinded_pills.available and not bottled_powder.available:
+                auto "grinded_pills %s" at Transform(zoom=0.7) 
+                action If(location == "grinder", [ToggleScreen("casefile_physical"), Jump("bottle_filling")])
+            elif bottled_powder.available:
+                auto "bottled_powder %s" at Transform(zoom=0.7)
+                action NullAction()
 
     # hbox:
     #     xpos 0.5 ypos 0.51

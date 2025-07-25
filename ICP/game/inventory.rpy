@@ -905,6 +905,8 @@ init python:
 
 # INVENTORY SCREENS ------------------------- (might move to custom_screens)
 
+
+
 """
 Sets up inventory screen when player enters.
 """

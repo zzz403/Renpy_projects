@@ -2,9 +2,8 @@
 errors listed below, and try again.
 
 
-File "game/custom_screens.rpy", line 8: reached end of line when expecting ':'.
-    if evidence_collected["coffee_in_bag"] and evidence_collected["drug_pill_in_bag"] and evidence_collected["water_bottle_in_bag"]\
-                                                                                                                                    ^
+File "game/custom_screens.rpy", line 141: is not terminated with a newline. (Check strings and parenthesis.)
+            hotspot (529, 157, 120, 112) action If(
 
 Ren'Py Version: Ren'Py 8.3.7.25031702
-Fri Jul 11 00:34:40 2025
+Sat Jul 19 20:01:24 2025

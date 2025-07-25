@@ -101,14 +101,25 @@ label IPC:
     call screen full_inventory
     call screen ui
 
-    s normal1 "Welcome to the wet lab! Here, we will be preparing a DFO mixture."
-    s normal2 "Let's get started."
-
     if not dfo_player.methanol and not dfo_player.dfo and not dfo_player.hfe and not dfo_player.acetic_acid:
         s normal3 "First, we need to gather our materials."
         jump materials_lab
     else:
         jump fumehood
+
+label grinder:
+    show screen back_button_screen('materials_lab') onlayer over_screens
+    
+    if bowl.completed():
+        $ hide_all_inventory()
+        $ ready_to_mix = False
+        s normal3 "We have no more business with the fumehood."
+        jump materials_lab
+
+    show screen grinder
+    call screen full_inventory
+    hide screen grinder
+    call screen ui
 
 
 label fumehood:
@@ -272,3 +283,247 @@ label label_collected:
     $ gin.process_evidence()
     $ label.enable_evidence()
     jump fumehood
+
+label grinder_pills:
+    hide screen back_button_screen onlayer over_screens
+    hide screen casefile_physical
+    hide screen ui
+    s normal1 "Let's grind these pills to analyze them."
+    # 直接跳转到动画/研磨过程，不需要玩家点击
+    jump pills_grinded
+
+label pills_grinded:
+    hide screen grinder
+    show expression "materials_lab/grinder_idle.png"
+    with dissolve
+    pause 0.5
+    # 首先显示药丸从上方掉落的动画
+    show expression "materials_lab/pill.png" at Transform(xpos=734, ypos=645)
+    with dissolve
+    
+    # 药丸掉落动画
+    show expression "materials_lab/pill.png" at Transform(xpos=725, ypos=796):
+        linear 1.0 ypos 796
+    
+    pause 1.5
+    
+    # 显示研磨工具
+    show expression "materials_lab/grinder_tool.png" at Transform(xpos=717, ypos=598)
+    with dissolve
+    
+    # 研磨动画 - 上下磨动
+    show expression "materials_lab/grinder_tool.png":
+        xpos 717 ypos 598
+        # 左边上下一下
+        linear 0.3 xpos 700 ypos 620
+        linear 0.3 xpos 700 ypos 598
+        # 右边上下一下  
+        linear 0.3 xpos 734 ypos 620
+        linear 0.3 xpos 734 ypos 598
+        # 再来几次研磨动作
+        linear 0.2 xpos 710 ypos 615
+        linear 0.2 xpos 710 ypos 598
+        linear 0.2 xpos 730 ypos 615
+        linear 0.2 xpos 730 ypos 598
+        linear 0.2 xpos 717 ypos 610
+        linear 0.2 xpos 717 ypos 598
+    
+    pause 3.0
+    
+    # 隐藏原来的药丸和工具，显示研磨后的粉末
+    hide expression "materials_lab/pill.png"
+    hide expression "materials_lab/grinder_tool.png"
+    # show grinded_pills at Transform(xpos=0.4, ypos=0.3, zoom=1.5)
+    # with dissolve
+    
+    s normal1 "The pills have been ground into powder for analysis."
+    $ removeInventoryItem(inventory_sprites[inventory_items.index("pills")])
+    $ addToInventory(["grinded_pills"])
+    $ pills.process_evidence()
+    $ grinded_pills.enable_evidence()
+    s normal1 "Powder ready for further analysis."
+    jump grinder
+
+label bottle_filling:
+    hide screen back_button_screen onlayer over_screens
+    hide screen casefile_physical
+    hide screen ui
+    s normal1 "Let's put the powder into a bottle for storage."
+    # 直接跳转到倒粉末动画
+    jump powder_pouring
+
+label powder_pouring:
+    hide screen grinder
+    show expression "materials_lab/scale_and_grinder_empty.png"
+    with dissolve
+    pause 0.5
+    
+    # 显示粉末在起始位置
+    show expression "materials_lab/Inventory-grinded_pills.png" at Transform(xpos=847, ypos=562) zorder 100
+    with dissolve
+    
+    # 显示瓶子在起始位置
+    show expression "materials_lab/teflon.png" at Transform(xpos=959, ypos=687) zorder 101
+    with dissolve
+    
+    pause 1.0
+    
+    # 粉末倾斜倒入动画 - 模拟粉末向瓶子倾斜
+    show expression "materials_lab/Inventory-grinded_pills.png" at Transform(xpos=847, ypos=562) zorder 100:
+        # 粉末开始倾斜，向瓶子方向移动并旋转
+        linear 0.5 xpos 900 ypos 600 rotate 15
+        linear 0.5 xpos 950 ypos 630 rotate 30
+        linear 0.8 xpos 959 ypos 650 rotate 45
+    
+    pause 2.0
+
+    hide expression "materials_lab/Inventory-grinded_pills.png"
+    
+    # 倒完后瓶子向左移动
+    show expression "materials_lab/teflon.png" at Transform(xpos=959, ypos=687) zorder 101:
+        linear 1.0 xpos 1216 ypos 687
+    
+    pause 1.5
+    
+    # 隐藏粉末（已经倒入瓶子）
+    hide expression "materials_lab/Inventory-grinded_pills.png"
+    
+    # 显示装满粉末的瓶子（如果有这样的图片的话）
+    # show expression "materials_lab/teflon_filled" at Transform(xpos=1216, ypos=687) zorder 101
+    
+    s normal1 "The powder has been successfully stored in the bottle."
+    $ removeInventoryItem(inventory_sprites[inventory_items.index("grinded_pills")])
+    $ bottled_powder.enable_evidence()
+    s normal1 "Sample is ready for further testing."
+    s normal1 "Now let's proceed to the digestion process."
+    jump digestion
+
+label digestion:
+    show screen back_button_screen('materials_lab') onlayer over_screens
+    scene expression "materials_lab/digestion_idle.png"
+    $ location = "digestion"
+    $ ready_to_digest = True
+    
+    "Click on the toolbox items to add reagents to the Teflon digestion vessel."
+    
+    show screen digestion
+    call screen full_inventory
+    hide screen digestion
+    call screen ui
+
+# Digestion reagent pouring animations
+label pour_nitric_acid:
+    hide screen digestion
+    show expression "materials_lab/digestion_idle.png"
+    $ digestion_vessel_x = 539
+    $ digestion_vessel_y = 182
+    
+    # Show the bottle moving to the vessel
+    show expression "Toolbox Items/toolbox-nitric_acid.png" as nitric_bottle:
+        zoom 2
+        xpos 100 ypos 100 
+        linear 2.0 xpos digestion_vessel_x ypos digestion_vessel_y - 100
+        linear 1.0 rotate 45  # Tilt for pouring
+        
+    
+    "Adding 4 mL of nitric acid to the digestion vessel..."
+    
+    # Pouring effect
+    show expression "images/liquid_pour.png" as pour_effect:
+        xpos digestion_vessel_x ypos digestion_vessel_y - 50
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 2.0 alpha 1.0
+        linear 0.5 alpha 0.0
+    
+    hide nitric_bottle
+    hide pour_effect
+    
+    # Mark nitric acid as added
+    $ reagents_added["nitric_acid"] = True
+    
+    # Check if all reagents are added
+    python:
+        if check_all_reagents_added():
+            addToInventory(["teflon_pills"])
+            renpy.say(None, "All reagents added! Teflon digestion vessel is ready for microwave digestion.")
+            renpy.jump("mds")
+    
+    jump digestion
+
+label pour_hydrofluoric_acid:
+    hide screen digestion
+    show expression "materials_lab/digestion_idle.png"
+
+    $ digestion_vessel_x = 539
+    $ digestion_vessel_y = 182
+    
+    # Show the bottle moving to the vessel
+    show expression "Toolbox Items/toolbox-hydrofluoric_acid.png" as hf_bottle:
+        zoom 2
+        xpos 150 ypos 100
+        linear 2.0 xpos digestion_vessel_x ypos digestion_vessel_y - 100
+        linear 1.0 rotate 45  # Tilt for pouring
+    
+    "Adding 0.5 mL of hydrofluoric acid to the digestion vessel..."
+    
+    # Pouring effect (smaller amount)
+    show expression "images/liquid_pour.png" as pour_effect:
+        xpos digestion_vessel_x ypos digestion_vessel_y - 50
+        alpha 0.0
+        linear 0.3 alpha 0.8
+        linear 1.0 alpha 0.8
+        linear 0.3 alpha 0.0
+    
+    hide hf_bottle
+    hide pour_effect
+    
+    # Mark hydrofluoric acid as added
+    $ reagents_added["hydrofluoric_acid"] = True
+    
+    # Check if all reagents are added
+    python:
+        if check_all_reagents_added():
+            addToInventory(["teflon_pills"])
+            renpy.say(None, "All reagents added! Teflon digestion vessel is ready for microwave digestion.")
+            renpy.jump("mds")
+    
+    jump digestion
+
+label pour_hydrogen_peroxide:
+    hide screen digestion
+    show expression "materials_lab/digestion_idle.png"
+    $ digestion_vessel_x = 539
+    $ digestion_vessel_y = 182
+    
+    # Show the bottle moving to the vessel
+    show expression "Toolbox Items/toolbox-hydrogen_peroxide.png" as h2o2_bottle:
+        zoom 2
+        xpos 200 ypos 100
+        linear 2.0 xpos digestion_vessel_x ypos digestion_vessel_y - 100
+        linear 1.0 rotate 45  # Tilt for pouring
+    
+    "Adding 2 mL of hydrogen peroxide to the digestion vessel..."
+    
+    # Pouring effect (medium amount)
+    show expression "images/liquid_pour.png" as pour_effect:
+        xpos digestion_vessel_x ypos digestion_vessel_y - 50
+        alpha 0.0
+        linear 0.4 alpha 0.9
+        linear 1.5 alpha 0.9
+        linear 0.4 alpha 0.0
+    
+    hide h2o2_bottle
+    hide pour_effect
+    
+    # Mark hydrogen peroxide as added
+    $ reagents_added["hydrogen_peroxide"] = True
+    
+    # Check if all reagents are added
+    python:
+        if check_all_reagents_added():
+            addToInventory(["teflon_pills"])
+            renpy.say(None, "All reagents added! Teflon digestion vessel is ready for microwave digestion.")
+            renpy.jump("mds")
+    
+    jump digestion

@@ -1,4 +1,6 @@
-﻿default coffee_cup_evidence = {
+﻿default drump_animation = True
+
+default coffee_cup_evidence = {
     "photo_taken": False,
     "note_taken": False,
     "sample_taken": False,
@@ -108,8 +110,8 @@ default current_location = "menu"
 
 ##########################################################################
 # ─── CAMERA  ────────────────────────────
-default theme_x = 0.5
-default theme_y = 0.3
+default theme_x = 0.54
+default theme_y = 0.54
 
 default theme_zoom = 2
 
@@ -157,6 +159,8 @@ default location_name_dict = {
     "hair": "Hair on the Floor",
     "backpack": "Backpack",
 }
+
+default infomation = True
 ##########################################################################
 
 default exhibit_no = ""
@@ -238,7 +242,10 @@ init python:
 label start:
     define config.rollback_enabled = False
     # "Hmm, that doesn't seem to work. Let's try something else."
-    jump animate_sequence
+    if drump_animation:
+        jump toolbox_init
+    else:
+        jump animate_sequence
     
     # jump toolbox_init
     return
@@ -550,6 +557,7 @@ label location_selection_mistake:
     scene white at white_zoom
     show location_selection
     "Why you even want to take a photo here??? Try somewhere in the room please."
+    hide location_selection
     jump location_selection_label
 
 transform half_size:
@@ -736,6 +744,9 @@ label camera_label:
 
 transform button_zoom:
     zoom 0.4
+
+transform stat_text:
+    pass
 
 label kastle_meyer_quiz:
     image kastle_meyer_quiz = "coffee_on_floor_theme.png"

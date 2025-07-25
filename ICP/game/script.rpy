@@ -2,6 +2,8 @@
 default show_case_files = False
 default show_toolbox = False
 default location = "hallway"
+default selected_elements = []
+default element_selection_message = ""
 
 ### entries on afis when search
 default afis_search = []
@@ -26,8 +28,12 @@ init python:
         renpy.hide_screen("inspectItem")
 
     def toolbox_actions(item: str) -> None:
+        print("Toolbox action initiated with item:", item)
         global tool
         global ready_to_mix
+        global ready_to_digest
+        
+        # DFO mixing reagents
         if ready_to_mix:
             hide_all_inventory()
             if item == "methanol":
@@ -43,10 +49,34 @@ init python:
             elif item == "hfe":
                 tool = "hfe"
                 renpy.jump("pour_hfe")
+        
+        # Digestion reagents
+        if ready_to_digest:
+            hide_all_inventory()
+            if item == "nitric_acid":
+                tool = "nitric acid"
+                renpy.hide_screen("full_inventory")
+                renpy.jump("pour_nitric_acid")
+            elif item == "hydrofluoric_acid":
+                tool = "hydrofluoric acid"
+                renpy.jump("pour_hydrofluoric_acid")
+            elif item == "hydrogen_peroxide":
+                tool = "hydrogen peroxide"
+                renpy.jump("pour_hydrogen_peroxide")
+        
+        # Dilution process
+        if ready_to_dilute:
+            print("Dilution process initiated with item:", item)
+            hide_all_inventory()
+            if item == "deionized_water":
+                tool = "deionized water"
+                renpy.hide_screen("full_inventory")
+                renpy.jump("add_deionized_water")
     
     def inventory_actions(item: str) -> None:
         global location
         global gin
+        global pills
         global imported_print
         global pressed
 
@@ -56,6 +86,27 @@ init python:
                 renpy.jump("fumehood_bottle")
         elif item == "label" or item == "baked_label":
             label_function_alt()
+        elif item == "pills":
+            if location == "grinder" and not pills.processed:
+                hide_all_inventory()
+                renpy.jump("grinder_pills")
+        elif item == "grinded_pills":
+            if location == "grinder":
+                hide_all_inventory()
+                renpy.jump("bottle_filling")
+        elif item == "teflon_pills":
+            if location == "mds":
+                hide_all_inventory()
+                renpy.jump("microwave_digestion_step1")  # 进入微波消解第一步
+        elif item == "digested_sample":
+            if location == "dilute":
+                hide_all_inventory()
+                renpy.jump("transfer_to_polypropylene")  # 转移到聚丙烯容器
+        elif item == "diluted_sample":
+            if location == "analytical_instruments":
+                hide_all_inventory()
+                print("进入ICP分析")
+                renpy.jump("icp_analysis")  # 进入ICP分析
         elif item == "fingerprint":
             if location == "afis" and pressed == "import":
                 imported_print = "print_1"
@@ -83,6 +134,26 @@ init python:
     
     def analyzed_everything() -> None:
         return prints["print_1"].processed and prints["print_4"].processed
+    
+    def check_all_reagents_added():
+        global reagents_added
+        return all(reagents_added.values())
+    
+    def toggle_element(element):
+        global selected_elements, element_selection_message
+        if element in selected_elements:
+            selected_elements.remove(element)
+            element_selection_message = f"{element} deselected from analysis."
+        else:
+            selected_elements.append(element)
+            element_selection_message = f"{element} selected for analysis."
+        # Clear message after a short time
+        renpy.restart_interaction()
+    
+    def clear_element_message():
+        global element_selection_message
+        element_selection_message = ""
+        renpy.restart_interaction()
     
     def set_timer(item: str):
         item = False
@@ -235,8 +306,16 @@ label lab_hallway_intro:
 
     # python code block
     python:
-        addToToolbox([])
-        addToInventory([])
+        addToToolbox(["nitric_acid","hydrofluoric_acid","hydrogen_peroxide","deionized_water"])
+        addToInventory(["pills"])
+        ready_to_digest = False
+        ready_to_dilute = False
+        # Track reagent addition status
+        reagents_added = {
+            "nitric_acid": False,
+            "hydrofluoric_acid": False, 
+            "hydrogen_peroxide": False
+        }
 
 
     # scene scene-1-bg at half_size - sets background image, don't need rn
@@ -298,6 +377,16 @@ label analytical_instruments:
     show screen back_button_screen('materials_lab') onlayer over_screens
     call screen analytical_instruments_screen
 
+label mds:
+    $ location = "mds"
+    show screen full_inventory
+    show screen back_button_screen('materials_lab') onlayer over_screens
+    scene expression "materials_lab/mds_idle.png"
+    
+    "Click on the Teflon digestion vessel to start the microwave digestion process."
+    
+    call screen full_inventory
+
 label end:
     hide screen back_button_screen onlayer over_screens
     show nina normal1 
@@ -306,3 +395,237 @@ label end:
     show nina normal3 
     s "But for now, give yourself a pat on the back and go get some rest!"
     return
+
+# Microwave Digestion System - Three Step Process
+label microwave_digestion_step1:
+    scene expression "materials_lab/mds_idle.png"
+    show screen back_button_screen('mds') onlayer over_screens
+    
+    "Step 1 of 3: Setting up the first microwave digestion cycle."
+    "Please select the correct power and time settings for the first step:"
+    
+    menu:
+        "5 minutes @ 150W":
+            "Incorrect! This power is too low and time too short for effective digestion."
+            jump microwave_digestion_step1
+        
+        "10 minutes @ 250W":
+            "Correct! Starting the first digestion cycle: 10 minutes @ 250W"
+            jump microwave_digestion_step2
+        
+        "15 minutes @ 300W":
+            "Incorrect! This would be too intense for the initial digestion step."
+            jump microwave_digestion_step1
+
+label microwave_digestion_step2:
+    scene expression "materials_lab/mds_idle.png"
+    show screen back_button_screen('mds') onlayer over_screens
+    
+    "Step 1 completed successfully! The sample has been partially digested."
+    "Step 2 of 3: Setting up the second microwave digestion cycle."
+    "Please select the correct power and time settings for the second step:"
+    
+    menu:
+        "10 minutes @ 400W":
+            "Correct! Starting the second digestion cycle: 10 minutes @ 400W"
+            jump microwave_digestion_step3
+        
+        "8 minutes @ 350W":
+            "Incorrect! The power is too low for this intermediate step."
+            jump microwave_digestion_step2
+        
+        "12 minutes @ 450W":
+            "Incorrect! This would be too aggressive for the second step."
+            jump microwave_digestion_step2
+
+label microwave_digestion_step3:
+    scene expression "materials_lab/mds_idle.png"
+    show screen back_button_screen('mds') onlayer over_screens
+    
+    "Step 2 completed successfully! The sample digestion is progressing well."
+    "Step 3 of 3: Setting up the final microwave digestion cycle."
+    "Please select the correct power and time settings for the final step:"
+    
+    menu:
+        "10 minutes @ 600W":
+            "Correct! Starting the final digestion cycle: 10 minutes @ 600W"
+            jump microwave_digestion_complete
+        
+        "8 minutes @ 550W":
+            "Incorrect! The time is too short for complete digestion."
+            jump microwave_digestion_step3
+        
+        "12 minutes @ 650W":
+            "Incorrect! This power would be too high and could damage the sample."
+            jump microwave_digestion_step3
+
+label microwave_digestion_complete:
+    scene expression "materials_lab/mds_idle.png"
+    show screen back_button_screen('mds') onlayer over_screens
+    
+    "Excellent! All three digestion cycles completed successfully!"
+    "The sample has been completely digested following the proper protocol:"
+    "• Step 1: 10 minutes @ 250W"
+    "• Step 2: 10 minutes @ 400W" 
+    "• Step 3: 10 minutes @ 600W"
+    
+    "The Teflon digestion vessel now contains a clear, digested sample ready for dilution."
+    
+    # Add the digested sample to inventory and proceed
+    python:
+        addToInventory(["digested_sample"])
+        teflon_pills.disable_evidence()  # Remove the undigested vessel
+    
+    "Digested sample added to inventory. Proceeding to dilution step..."
+    
+    jump dilute
+
+# Step 4: Dilution Process
+label dilute:
+    $ location = "dilute"
+    # Only set ready_to_dilute to False if not already set by transfer process
+    if "ready_to_dilute" not in globals() or not ready_to_dilute:
+        $ ready_to_dilute = False
+    show screen full_inventory
+    show screen back_button_screen('mds') onlayer over_screens
+    scene expression "materials_lab/dilute_idle.png"
+    
+    "Step 4: Dilution - Transfer the digested solution to a polypropylene liner"
+    if not ready_to_dilute:
+        "Click on the digested sample to transfer it to the polypropylene container."
+    else:
+        "Now click on deionized water in the toolbox to dilute the sample to 50 mL."
+    
+    call screen full_inventory
+
+# Dilution process animations
+label transfer_to_polypropylene:
+    scene expression "materials_lab/dilute_idle.png"
+    show screen back_button_screen('dilute') onlayer over_screens
+    
+    $ transfer_x = 435
+    $ transfer_y = 251
+    
+    # Show the digested sample moving to the polypropylene container
+    show expression "Inventory Items/Inventory-digested_sample.png" as sample_transfer:
+        xpos 100 ypos 100
+        linear 2.0 xpos transfer_x ypos transfer_y - 50
+        linear 1.0 rotate 15  # Slight tilt for pouring
+    
+    "Transferring the digested sample to the polypropylene liner..."
+    
+    # Pouring effect
+    show expression "images/liquid_pour.png" as pour_sample:
+        xpos transfer_x ypos transfer_y - 30
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 2.0 alpha 1.0
+        linear 0.5 alpha 0.0
+    
+    hide sample_transfer
+    hide pour_sample
+    
+    "Sample successfully transferred to polypropylene container."
+    "Now add deionized water to dilute the solution to 50 mL total volume."
+    
+    $ ready_to_dilute = True
+    
+    jump dilute
+
+label add_deionized_water:
+    $ print("Adding deionized water...")
+    scene expression "materials_lab/dilute_idle.png"
+    show screen back_button_screen('dilute') onlayer over_screens
+    
+    $ dilute_x = 435
+    $ dilute_y = 251
+    
+    # Show the deionized water bottle moving to the container
+    show expression "Toolbox Items/toolbox-deionized_water.png" as water_bottle:
+        xpos 150 ypos 100
+        linear 2.0 xpos dilute_x ypos dilute_y - 80
+        linear 1.0 rotate 30  # Tilt for pouring
+    
+    "Adding deionized water to dilute the solution to 50 mL..."
+    
+    # Pouring effect for water (longer duration)
+    show expression "images/liquid_pour.png" as pour_water:
+        xpos dilute_x ypos dilute_y - 50
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 3.0 alpha 1.0  # Longer pour for dilution
+        linear 0.5 alpha 0.0
+    
+    hide water_bottle
+    hide pour_water
+    
+    "Excellent! The sample has been diluted to 50 mL with deionized water."
+    "The diluted sample is now ready for ICP analysis."
+    
+    # Replace digested_sample with diluted_sample
+    python:
+        addToInventory(["diluted_sample"])
+        digested_sample.disable_evidence()
+        ready_to_dilute = False
+    
+    show nina normal1
+    s "Perfect! Sample preparation is complete."
+    s "Now let's head back to the materials lab to access the analytical instruments for ICP analysis."
+    
+    jump materials_lab
+
+# ICP Analysis System
+label icp_analysis:
+    $ location = "icp"
+    # show screen full_inventory
+    show screen back_button_screen('analytical_instruments') onlayer over_screens
+    scene expression "materials_lab/ICP_periodic_idle.png"
+    
+    "ICP Analysis: Click on elements in the periodic table to analyze their concentration in the sample."
+    "Click an element once to select it, click again to deselect."
+    
+    # Initialize selected elements tracking
+    python:
+        if "selected_elements" not in globals():
+            selected_elements = []
+    
+    show screen icp_periodic_table
+
+# ICP Periodic Table Screen with Hotspots
+# ICP Analysis Results
+label icp_results:
+    scene expression "materials_lab/ICP_periodic_idle.png"
+    show screen back_button_screen('analytical_instruments') onlayer over_screens
+    
+    "ICP Analysis Results:"
+    "Analyzing selected elements: [', '.join(selected_elements)]"
+    
+    # Generate random concentrations for demonstration
+    python:
+        analysis_results = {}
+        import random
+        for element in selected_elements:
+            concentration = round(random.uniform(0.1, 100.0), 2)
+            analysis_results[element] = concentration
+    
+    "Analysis complete! Results:"
+    
+    python:
+        result_text = ""
+        for element, concentration in analysis_results.items():
+            result_text += f"{element}: {concentration} ppm\n"
+    
+    "[result_text]"
+    
+    show nina normal1
+    s "Excellent work! You've successfully completed the ICP analysis."
+    s "These concentration values will be important for your forensic report."
+    
+    # Mark analysis as complete
+    python:
+        diluted_sample.processed = True
+        addToInventory(["icp_results"])
+    
+    "ICP analysis results added to inventory."
+    
+    jump analytical_instruments
