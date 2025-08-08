@@ -1,0 +1,56 @@
+# Calibration Blank Preparation
+label prepare_cal_blank:
+    scene expression "materials_lab/autosampler_idle.png"
+    
+    "Preparing calibration blank with nitric acid..."
+    
+    # Show nitric acid bottle moving for cal blank preparation
+    show expression "Toolbox Items/toolbox-nitric_acid.png" as nitric_bottle:
+        xpos 150 ypos 100
+        linear 2.0 xpos 500 ypos 280
+        linear 1.0 rotate 30  # Tilt for pouring
+    
+    "Adding nitric acid to create calibration blank..."
+    
+    # Pouring effect
+    show expression "images/liquid_pour.png" as pour_nitric:
+        xpos 520 ypos 300
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 2.0 alpha 1.0
+        linear 0.5 alpha 0.0
+    
+    hide nitric_bottle
+    hide pour_nitric
+    
+    # Mark cal blank as obtained
+    python:
+        cal_blank_obtained = True
+    
+    show nina normal1
+    s "Excellent! We have successfully prepared a calibration blank."
+    s "This blank will be essential for accurate analysis results."
+    hide nina
+    
+    # Check if we can proceed to next stage
+    python:
+        if cal_blank_obtained and len(liquid_samples_obtained) > 0:
+            renpy.jump("volumetric_flask_stage")
+    
+    jump liquid_sample_preparation
+
+# Volumetric Flask Stage
+label volumetric_flask_stage:
+    $ location = "volumetric_flask"
+    scene expression "materials_lab/volumetric_flask_idle.png"
+    
+    "Volumetric Flask Station - Precision dilution and measurement"
+    "You have successfully prepared both liquid samples and calibration blank."
+    "Now proceeding to the volumetric flask station for precise dilutions."
+    
+    show nina normal1
+    s "Great work! You've prepared all the necessary samples."
+    s "Now we can move on to precise volumetric measurements."
+    hide nina
+    
+    call screen full_inventory

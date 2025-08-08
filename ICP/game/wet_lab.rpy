@@ -284,6 +284,8 @@ label label_collected:
     $ label.enable_evidence()
     jump fumehood
 
+
+
 label grinder_pills:
     hide screen back_button_screen onlayer over_screens
     hide screen casefile_physical
@@ -396,6 +398,7 @@ label powder_pouring:
     $ bottled_powder.enable_evidence()
     s normal1 "Sample is ready for further testing."
     s normal1 "Now let's proceed to the digestion process."
+    $ pill_process = 1
     jump digestion
 
 label digestion:

@@ -105,6 +105,7 @@ init python:
     )
 
     # Additional attribute for label
+    # Additional attribute for label
     label.dipped = False
 
     pills = Evidence_v2(
@@ -203,6 +204,7 @@ init python:
         description = "The fingerprint gathered from the light switch."
     )
 
+
 screen ui():
     zorder 1
     hbox:
@@ -264,19 +266,6 @@ screen casefile_physical():
         imagebutton:
             auto fingerprint.image at Transform(zoom=0.7)
             action If(location == "afis" and pressed == "import", [SetVariable("imported_print", "print_1"), Jump("import_print")])
-
-    hbox:
-        xpos 0.2 ypos 0.51
-        imagebutton:
-            if not pills.processed:
-                auto "pills %s" at Transform(zoom=0.7)
-                action If(location == "grinder", [ToggleScreen("casefile_physical"), Jump("grinder_pills")])
-            elif pills.processed and grinded_pills.available and not bottled_powder.available:
-                auto "grinded_pills %s" at Transform(zoom=0.7) 
-                action If(location == "grinder", [ToggleScreen("casefile_physical"), Jump("bottle_filling")])
-            elif bottled_powder.available:
-                auto "bottled_powder %s" at Transform(zoom=0.7)
-                action NullAction()
 
     # hbox:
     #     xpos 0.5 ypos 0.51

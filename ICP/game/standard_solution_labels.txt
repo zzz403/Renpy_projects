@@ -1,0 +1,112 @@
+# Standard Solution Preparation Labels
+label pipette_multi_element_stock:
+    scene expression "materials_lab/volumetric_flask_idle.png"
+    
+    "Using 5 mL pipette to transfer multi-element stock..."
+    
+    # Show pipette first
+    show expression "materials_lab/pipette.png" as pipette:
+        xpos 200 ypos 150
+        linear 1.5 xpos 400 ypos 200
+    
+    # Show multi-element stock bottle
+    show expression "materials_lab/multi_element_stock.png" as stock_bottle:
+        xpos 100 ypos 100
+        linear 2.0 xpos 350 ypos 180
+    
+    "Pipetting 5 mL of multi-element stock solution..."
+    
+    # Move pipette to bottle for aspiration
+    show pipette:
+        linear 1.0 xpos 360 ypos 190
+    
+    "Aspirating stock solution into pipette..."
+    
+    pause 1.5
+    
+    # Move to volumetric flask in center
+    show pipette:
+        linear 2.0 xpos 640 ypos 360  # Center of screen
+        linear 1.0 rotate 15  # Slight tilt for dispensing
+    
+    "Dispensing 5 mL into the 50 mL volumetric flask..."
+    
+    # Dispensing effect
+    show expression "images/liquid_pour.png" as pour_stock:
+        xpos 660 ypos 380
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 2.0 alpha 1.0
+        linear 0.5 alpha 0.0
+    
+    hide pipette
+    hide stock_bottle
+    hide pour_stock
+    
+    show nina normal1
+    s "Excellent! You've successfully transferred 5 mL of multi-element stock."
+    s "Now we need to add 45 mL of 2% nitric acid using the graduated cylinder."
+    s "Click on nitric acid in the toolbox to continue."
+    hide nina
+    
+    jump volumetric_flask_stage
+
+label add_nitric_acid_cylinder:
+    scene expression "materials_lab/volumetric_flask_idle.png"
+    
+    "Using graduated cylinder to add 45 mL 2% HNO3..."
+    
+    # Show graduated cylinder
+    show expression "materials_lab/graduated_cylinder.png" as cylinder:
+        xpos 150 ypos 120
+        linear 1.5 xpos 300 ypos 180
+    
+    # Show nitric acid bottle
+    show expression "Toolbox Items/toolbox-nitric_acid.png" as nitric_bottle:
+        xpos 100 ypos 100
+        linear 2.0 xpos 250 ypos 160
+        linear 1.0 rotate 20  # Tilt for pouring into cylinder
+    
+    "Measuring 45 mL of 2% nitric acid in graduated cylinder..."
+    
+    # Pouring into cylinder effect
+    show expression "images/liquid_pour.png" as pour_cylinder:
+        xpos 270 ypos 180
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 3.0 alpha 1.0  # Longer pour for 45 mL
+        linear 0.5 alpha 0.0
+    
+    hide nitric_bottle
+    hide pour_cylinder
+    
+    "Now transferring 45 mL from graduated cylinder to volumetric flask..."
+    
+    # Move cylinder to volumetric flask
+    show cylinder:
+        linear 2.0 xpos 600 ypos 340  # Move to volumetric flask
+        linear 1.0 rotate 25  # Tilt for pouring
+    
+    "Pouring nitric acid into volumetric flask..."
+    
+    # Pouring into flask effect
+    show expression "images/liquid_pour.png" as pour_flask:
+        xpos 620 ypos 360
+        alpha 0.0
+        linear 0.5 alpha 1.0
+        linear 3.0 alpha 1.0
+        linear 0.5 alpha 0.0
+    
+    hide cylinder
+    hide pour_flask
+    
+    show nina normal1
+    s "Perfect! You've successfully prepared the 10x standard solution."
+    s "The volumetric flask now contains 5 mL multi-element stock + 45 mL 2% HNO3."
+    s "This gives us a 10x dilution standard for calibration and functional checks."
+    hide nina
+    
+    "10x standard solution preparation complete!"
+    "Ready for ICP analysis calibration."
+    
+    jump volumetric_flask_stage

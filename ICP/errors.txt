@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 595: The hotspot statement is not a valid child of the imagebutton statement.
-    hotspot (50, 180, 40, 40) action Function(toggle_element, "H")
-           ^
+File "game/custom_screens.rpy", line 287: 'Analysis' is not a keyword argument or valid child of the screen statement.
+    Analysis button with black background
+            ^
 
 Ren'Py Version: Ren'Py 8.3.7.25031702
-Fri Jul 25 01:42:47 2025
+Wed Jul 30 22:56:29 2025

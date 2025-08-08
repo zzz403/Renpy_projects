@@ -124,22 +124,31 @@ screen materials_lab_screen:
     # text "Fumehood" xpos 0.59 ypos 0.67
 
     hbox:
-        xpos 0.52 yalign 0.5
+        xpos 0.52 yalign 0.7
         imagebutton:
             idle "materials_lab/ICP_idle.png"
             hover "materials_lab/ICP_hover.png"
             action [SetVariable("location", "ICP"), Jump("icp_analysis")]
-    text "ICP" xpos 0.59 ypos 0.67
+    text "ICP" xpos 0.59 ypos 0.77
 
     # Grinder&Scale_idle.png
 
     hbox:
-        xpos 0.20 yalign 0.32
+        xpos 0.20 yalign 0.52
         imagebutton:
             idle "Grinder&Scale_idle.png"
             hover "Grinder&Scale_hover.png"
             action [SetVariable("location", "grinder"), Jump("grinder")]
-    text "Grinder & Scale" xpos 0.24 ypos 0.67
+    text "Grinder & Scale" xpos 0.24 ypos 0.77
+
+    # Liquid Sample Prepare
+    hbox:
+        xpos 0.42 yalign 0.1
+        imagebutton:
+            idle "liquid_sample-pre_idle.png"
+            hover "liquid_sample-pre_hover.png"
+            action [SetVariable("location", "liquid_sample_prep"), Jump("liquid_sample_preparation")]
+    text "Liquid Sample Prepare" xpos 0.42 ypos 0.38
 
 screen wet_lab_screen:
     image "fumehood"
@@ -153,8 +162,8 @@ screen grinder:
     imagemap:
         idle "materials_lab/scale_and_grinder_idle.png"
         hover "materials_lab/scale_and_grinder_hover.png"
-        hotspot (607, 717, 267, 224) action [SetVariable("location", "grinder")]
-        hotspot (1038, 474, 424, 491) action [SetVariable("location", "grinder")]
+        hotspot (607, 717, 267, 224) action Jump("grinder_introduction")  # 研磨器介绍
+        hotspot (1038, 474, 424, 491) action Jump("scale_introduction")   # 天平介绍
 
 screen grindering:
     zorder 1
@@ -224,48 +233,62 @@ screen icp_periodic_table():
         hotspot (1442, 406, 70, 70) action Function(toggle_element, "Br")   # Bromine
         hotspot (1512, 406, 70, 70) action Function(toggle_element, "Kr")   # Krypton
 
-        # # Heavy metals (Row 5)
-        # hotspot (450, 340, 40, 40) action Function(toggle_element, "Ag")   # Silver
-        # hotspot (490, 340, 40, 40) action Function(toggle_element, "Cd")   # Cadmium
-        # hotspot (530, 340, 40, 40) action Function(toggle_element, "In")   # Indium
-        # hotspot (570, 340, 40, 40) action Function(toggle_element, "Sn")   # Tin
-        # hotspot (610, 340, 40, 40) action Function(toggle_element, "Sb")   # Antimony
-        
-        # # Heavy metals (Row 6)
-        # hotspot (450, 380, 40, 40) action Function(toggle_element, "Au")   # Gold
-        # hotspot (490, 380, 40, 40) action Function(toggle_element, "Hg")   # Mercury
-        # hotspot (530, 380, 40, 40) action Function(toggle_element, "Tl")   # Thallium
-        # hotspot (570, 380, 40, 40) action Function(toggle_element, "Pb")   # Lead
-        # hotspot (610, 380, 40, 40) action Function(toggle_element, "Bi")   # Bismuth
-        
-        # # More transition metals (Row 5)
-        # hotspot (130, 340, 40, 40) action Function(toggle_element, "Y")    # Yttrium
-        # hotspot (170, 340, 40, 40) action Function(toggle_element, "Zr")   # Zirconium
-        # hotspot (210, 340, 40, 40) action Function(toggle_element, "Nb")   # Niobium
-        # hotspot (250, 340, 40, 40) action Function(toggle_element, "Mo")   # Molybdenum
-        # hotspot (290, 340, 40, 40) action Function(toggle_element, "Tc")   # Technetium
-        # hotspot (330, 340, 40, 40) action Function(toggle_element, "Ru")   # Ruthenium
-        # hotspot (370, 340, 40, 40) action Function(toggle_element, "Rh")   # Rhodium
-        # hotspot (410, 340, 40, 40) action Function(toggle_element, "Pd")   # Palladium
-        
+        # Heavy metals (Row 5)
+        hotspot (1023, 477, 70, 69) action Function(toggle_element, "Ag")   # Silver
+        hotspot (1093, 477, 70, 69) action Function(toggle_element, "Cd")   # Cadmium
+        hotspot (1163, 477, 70, 69) action Function(toggle_element, "In")   # Indium
+        hotspot (1233, 477, 70, 69) action Function(toggle_element, "Sn")   # Tin
+        hotspot (1303, 477, 70, 69) action Function(toggle_element, "Sb")   # Antimony
+
+        # Heavy metals (Row 6)
+        hotspot (1023, 547, 70, 69) action Function(toggle_element, "Au")   # Gold
+        hotspot (1093, 547, 70, 69) action Function(toggle_element, "Hg")   # Mercury
+        hotspot (1163, 547, 70, 69) action Function(toggle_element, "Tl")   # Thallium
+        hotspot (1233, 547, 70, 69) action Function(toggle_element, "Pb")   # Lead
+        hotspot (1303, 547, 70, 69) action Function(toggle_element, "Bi")   # Bismuth
+
+        # More transition metals (Row 5)
+        hotspot (462, 476, 71, 71) action Function(toggle_element, "Y")    # Yttrium
+        hotspot (532, 476, 71, 71) action Function(toggle_element, "Zr")   # Zirconium
+        hotspot (602, 476, 71, 71) action Function(toggle_element, "Nb")   # Niobium
+        hotspot (672, 476, 71, 71) action Function(toggle_element, "Mo")   # Molybdenum
+        hotspot (742, 476, 71, 71) action Function(toggle_element, "Tc")   # Technetium
+        hotspot (812, 476, 71, 71) action Function(toggle_element, "Ru")   # Ruthenium
+        hotspot (882, 476, 71, 71) action Function(toggle_element, "Rh")   # Rhodium
+        hotspot (952, 476, 71, 71) action Function(toggle_element, "Pd")   # Palladium
+
         # # More transition metals (Row 6)
-        # hotspot (130, 380, 40, 40) action Function(toggle_element, "La")   # Lanthanum  
-        # hotspot (170, 380, 40, 40) action Function(toggle_element, "Hf")   # Hafnium
-        # hotspot (210, 380, 40, 40) action Function(toggle_element, "Ta")   # Tantalum
-        # hotspot (250, 380, 40, 40) action Function(toggle_element, "W")    # Tungsten
-        # hotspot (290, 380, 40, 40) action Function(toggle_element, "Re")   # Rhenium
-        # hotspot (330, 380, 40, 40) action Function(toggle_element, "Os")   # Osmium
-        # hotspot (370, 380, 40, 40) action Function(toggle_element, "Ir")   # Iridium
-        # hotspot (410, 380, 40, 40) action Function(toggle_element, "Pt")   # Platinum
-    
-    # Display selected elements
-    text "Selected Elements: [', '.join(selected_elements)]" xpos 50 ypos 50 size 20 color "#FFFFFF"
+        hotspot (532, 546, 71, 71) action Function(toggle_element, "Hf")   # Hafnium
+        hotspot (602, 546, 71, 71) action Function(toggle_element, "Ta")   # Tantalum
+        hotspot (672, 546, 71, 71) action Function(toggle_element, "W")    # Tungsten
+        hotspot (742, 546, 71, 71) action Function(toggle_element, "Re")   # Rhenium
+        hotspot (812, 546, 71, 71) action Function(toggle_element, "Os")   # Osmium
+        hotspot (882, 546, 71, 71) action Function(toggle_element, "Ir")   # Iridium
+        hotspot (952, 546, 71, 71) action Function(toggle_element, "Pt")   # Platinum
+
+    # Display selected elements with black background
+    frame:
+        xpos 640 ypos 50
+        xanchor 0.5
+        background "#000000"
+        padding (20, 10)
+        text "Selected Elements: [', '.join(selected_elements)]" size 20 color "#FFFFFF"
     
     # Display selection message with auto-clear timer
     if element_selection_message:
-        text element_selection_message xpos 50 ypos 80 size 18 color "#FFFF00"
+        frame:
+            xpos 640 ypos 100
+            xanchor 0.5
+            background "#000000"
+            padding (20, 10)
+            text element_selection_message size 18 color "#FFFF00"
         timer 2.0 action Function(clear_element_message)
     
-    # Analysis button
+    # Analysis button with black background
     if len(selected_elements) > 0:
-        textbutton "Start ICP Analysis" action Jump("icp_results") xpos 50 ypos 120
+        frame:
+            xpos 640 ypos 150
+            xanchor 0.5
+            background "#000000"
+            padding (10, 5)
+            textbutton "Start ICP Analysis" action Jump("icp_results") text_color "#FFFFFF"

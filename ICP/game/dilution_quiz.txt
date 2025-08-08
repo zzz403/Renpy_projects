@@ -1,0 +1,65 @@
+# Dilution Series Quiz
+label dilution_series_quiz:
+    scene expression "materials_lab/volumetric_flask_idle.png"
+    
+    "Excellent! You have successfully prepared the 10x standard solution."
+    "Now let's test your understanding of dilution series preparation."
+    
+    show nina normal1
+    s "Great work completing the 10x standard! Now I want to test your knowledge."
+    s "How would you prepare a 100x standard solution from the 10x solution we just made?"
+    hide nina
+    
+    menu:
+        "What is the correct method to prepare 100x standard solution?"
+        
+        "Take 10x solution 1 mL + 2% HNO3 49 mL":
+            "Incorrect. This ratio would give a different dilution factor."
+            jump dilution_series_quiz
+        
+        "Take 10x solution 5 mL + 2% HNO3 45 mL":
+            "Correct! Taking 5 mL of 10x solution and adding 45 mL of 2% HNO3 gives 100x dilution."
+            jump quiz_1000x
+        
+        "Take 10x solution 10 mL + 2% HNO3 40 mL":
+            "Incorrect. This would give a different dilution factor."
+            jump dilution_series_quiz
+
+label quiz_1000x:
+    scene expression "materials_lab/volumetric_flask_idle.png"
+    
+    show nina normal1
+    s "Excellent! You understand the 100x preparation."
+    s "Now, how would you prepare a 1000x standard solution?"
+    hide nina
+    
+    menu:
+        "What is the correct method to prepare 1000x standard solution?"
+        
+        "Take 100x solution 5 mL + 2% HNO3 45 mL":
+            "Correct! Taking 5 mL of 100x solution and adding 45 mL of 2% HNO3 gives 1000x dilution."
+            jump quiz_complete
+        
+        "Take 10x solution 1 mL + 2% HNO3 99 mL":
+            "Incorrect. While this would give 1000x from 10x, the question asks about using 100x solution."
+            jump quiz_1000x
+        
+        "Take 100x solution 10 mL + 2% HNO3 40 mL":
+            "Incorrect. This ratio would give a different dilution factor."
+            jump quiz_1000x
+
+label quiz_complete:
+    scene expression "materials_lab/volumetric_flask_idle.png"
+    
+    show nina normal1
+    s "Perfect! You have mastered the dilution series concept."
+    s "You understand that:"
+    s "• 100x standard: 10x solution 5 mL + 2% HNO3 45 mL"
+    s "• 1000x standard: 100x solution 5 mL + 2% HNO3 45 mL"
+    s "This systematic approach ensures accurate calibration standards."
+    hide nina
+    
+    "Dilution series training complete!"
+    "You are now ready for advanced ICP calibration procedures."
+    
+    jump volumetric_flask_stage
