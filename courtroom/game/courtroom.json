@@ -1,0 +1,27 @@
+[
+    {
+        "specialty": "toxicology",
+        "evidence": [
+            {
+                "name": "Coffee Analysis",
+                "image": "coffee_cup",
+                "description": "Chemical analysis of the coffee revealed arsenic (As) concentrations significantly above the regulatory limit for drinking water. Such elevated levels are consistent with chronic exposure over time rather than a single high-dose event.",
+                "truth_base": [
+                    "arsenic (As) detected above safe limit",
+                    "matrix is coffee (a commonly consumed beverage)",
+                    "finding supports chronic exposure pattern"
+                ]
+            },
+            {
+                "name": "Pill Analysis",
+                "image": "pill_bottle",
+                "description": "Elemental analysis of the pill detected barium (Ba) in quantities far exceeding safe intake levels. A single dose at this concentration is consistent with an acute, rapid-onset toxic effect.",
+                "truth_base": [
+                    "barium (Ba) detected at elevated level",
+                    "matrix is pill (single-dose vehicle)",
+                    "finding supports acute/rapid-onset poisoning"
+                ]
+            }
+        ]
+    }
+]
