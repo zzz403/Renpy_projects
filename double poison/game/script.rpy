@@ -1,4 +1,4 @@
-﻿default drump_animation = True
+﻿default drump_animation = False
 
 default coffee_cup_evidence = {
     "photo_taken": False,
@@ -240,6 +240,7 @@ init python:
         renpy.hide_screen("color_picker")
 
 label start:
+    play music "begain.wav"
     define config.rollback_enabled = False
     # "Hmm, that doesn't seem to work. Let's try something else."
     if drump_animation:
@@ -350,6 +351,7 @@ screen ready_to_start:
         hotspot (0, 0, 1920, 1080) action Jump("ready_to_start_label")
 
 label ready_to_start_label:
+    play music "bgm.mp3"
     scene outside_study
     call screen outside_study1
 
@@ -545,6 +547,7 @@ label toolbox_init:
     jump location_selection_label
 
 label location_selection_label:
+    # play music "bgm.mp3"
     $current_location = "location_selection"
     show screen study_room3_inventory
     call screen study_room_hover
